@@ -7,7 +7,7 @@ import {
     generateQuizFromMediaUrl 
 } from '../../../../services/quiz/QuizService';
 import { generateAssessmentPDF } from '../../../../utils/pdfUtils';
-import toast from 'react-hot-toast'; // Add this import
+import toast from 'react-hot-toast';
 
 // Import components
 import InputTypeSelector from './components/InputTypeSelector';
@@ -36,6 +36,7 @@ const GenerateQuiz = () => {
     const [cloudinaryData, setCloudinaryData] = useState(null);
     const [showOptionsStep, setShowOptionsStep] = useState(false);
     const [assessmentAction, setAssessmentAction] = useState(null);
+    const [isDownloading, setIsDownloading] = useState(false);
     
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
@@ -267,6 +268,9 @@ const GenerateQuiz = () => {
 
         setLoading(true);
         setError(null);
+        
+        // Set isDownloading based on the action
+        setIsDownloading(assessmentAction === "download");
 
         try {
             let data;
@@ -336,29 +340,43 @@ const GenerateQuiz = () => {
                     generateAssessmentPDF(questions, pdfTitle);
                     
                     // Show toast notification for successful download
-                    toast.success('Assessment PDF downloaded successfully!', {
+                    toast.success('Assessment successfully downloaded!', {
                         icon: '📄',
                         duration: 6000,
                         style: {
                             borderRadius: '10px',
-                            background: '#33ff33',
-                            // color green
-                            // color: '#33ff33',
+                            background: '#0f172a',
+                            color: '#fff',
+                            border: '1px solid rgba(6, 182, 212, 0.5)',
+                            padding: '16px',
+                            boxShadow: '0 4px 12px rgba(6, 182, 212, 0.15)'
+                        },
+                        iconTheme: {
+                            primary: '#06b6d4',
+                            secondary: '#fff',
                         },
                     });
                     
-                    // Still navigate to attempt quiz
-//                     navigate(`/attemptquiz/${data.assessmentId}`);
+                    // Navigate to attempt quiz
+                    // navigate(`/attemptquiz/${data.assessmentId}`);
                 } catch (pdfError) {
                     console.error('Error generating PDF:', pdfError);
                     setError(`PDF generation failed: ${pdfError.message}. Redirecting to quiz page.`);
                     
-                    toast.error('Failed to download PDF. Taking you to the assessment page.');
+                    toast.error('Failed to download PDF', {
+                        duration: 5000,
+                        style: {
+                            borderRadius: '10px',
+                            background: '#0f172a',
+                            color: '#fff',
+                            border: '1px solid rgba(239, 68, 68, 0.5)',
+                        },
+                    });
                     
                     // Navigate to attempt quiz if PDF generation fails
-//                     setTimeout(() => {
-//                             navigate(`/attemptquiz/${data.assessmentId}`);
-//                     }, 3000);
+                    // setTimeout(() => {
+                    //     navigate(`/attemptquiz/${data.assessmentId}`);
+                    // }, 3000);
                 }
             } else {
                 // For "take" action, simply navigate to the quiz
@@ -366,16 +384,24 @@ const GenerateQuiz = () => {
             }
         } catch (err) {
             setError(err.message);
-            toast.error(`Error: ${err.message}`);
+            toast.error(`Error: ${err.message}`, {
+                style: {
+                    borderRadius: '10px',
+                    background: '#0f172a',
+                    color: '#fff',
+                    border: '1px solid rgba(239, 68, 68, 0.5)',
+                },
+            });
         } finally {
             setLoading(false);
+            setIsDownloading(false);
         }
     };
 
     return (
         <section className="py-16 bg-slate-900 -mt-2 min-h-screen">
             {/* Loading overlay */}
-            <LoadingOverlay loading={loading} />
+            <LoadingOverlay loading={loading} isDownloading={isDownloading} />
             
             <div className="container mx-auto px-6 -mt-12">
                 <div className="text-center mb-12">
