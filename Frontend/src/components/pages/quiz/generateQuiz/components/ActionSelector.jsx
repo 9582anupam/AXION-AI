@@ -12,7 +12,7 @@ const ActionSelector = ({ onActionSelect }) => {
           <FileText className="h-8 w-8 text-white" />
         </div>
         <h4 className="text-lg font-bold text-slate-200 mb-2">
-          Take Assessment
+          Attempt Assessment
         </h4>
         <p className="text-slate-400 text-sm">
           Configure and take a custom assessment based on the content
@@ -31,7 +31,7 @@ const ActionSelector = ({ onActionSelect }) => {
           Download Assessment
         </h4>
         <p className="text-slate-400 text-sm">
-          Get a comprehensive mixed assessment (5 MCQ, 5 short, 5 long answer questions)
+          Get a comprehensive mixed assessment as PDF (5 MCQ, 5 short, 5 long answer questions)
         </p>
       </div>
     </div>

@@ -6,16 +6,18 @@ import {
     generateQuizFromDocument, 
     generateQuizFromMediaUrl 
 } from '../../../../services/quiz/QuizService';
+import { generateAssessmentPDF } from '../../../../utils/pdfUtils';
+import toast from 'react-hot-toast'; // Add this import
 
 // Import components
-import InputTypeSelector from '../generateQuiz/components/InputTypeSelector';
-import FileUploader from '../generateQuiz/components/FileUploader';
-import UrlInputField from '../generateQuiz/components/UrlInputField';
-import ActionSelector from '../generateQuiz/components/ActionSelector';
-import ConfigurationOptions from '../generateQuiz/components/ConfigurationOptions';
-import DownloadInfo from '../generateQuiz/components/DownloadInfo';
-import ErrorMessage from '../generateQuiz/components/ErrorMessage';
-import LoadingOverlay from '../generateQuiz/components/LoadingOverlay';
+import InputTypeSelector from './components/InputTypeSelector';
+import FileUploader from './components/FileUploader';
+import UrlInputField from './components/UrlInputField';
+import ActionSelector from './components/ActionSelector';
+import ConfigurationOptions from './components/ConfigurationOptions';
+import DownloadInfo from './components/DownloadInfo';
+import ErrorMessage from './components/ErrorMessage';
+import LoadingOverlay from './components/LoadingOverlay';
 import { FileText, Youtube, Video, Music } from "lucide-react";
 
 const GenerateQuiz = () => {
@@ -268,20 +270,14 @@ const GenerateQuiz = () => {
 
         try {
             let data;
+            const quizType = assessmentAction === "download" ? "MIX" : questionType.id;
+            const quizCount = assessmentAction === "download" ? "15" : questionCount.id;
+            const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty.id;
             
             if (selectedInput.id === "youtube") {
-                // If downloading, use MIX type with default values
-                const quizType = assessmentAction === "download" ? "MIX" : questionType.id;
-                const quizCount = assessmentAction === "download" ? "15" : questionCount.id;
-                const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty.id;
-                
                 data = await generateQuizFromYoutube(inputValue, quizCount, quizDifficulty, quizType);
             } 
             else if (selectedInput.id === "mp4-local" || selectedInput.id === "mp3-local") {
-                const quizType = assessmentAction === "download" ? "MIX" : questionType.id;
-                const quizCount = assessmentAction === "download" ? "15" : questionCount.id;
-                const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty.id;
-                
                 if (cloudinaryUrl && cloudinaryData) {
                     data = await generateQuizFromMediaUrl(
                         cloudinaryUrl, 
@@ -305,26 +301,72 @@ const GenerateQuiz = () => {
                 }
             }
             else if (selectedInput.id === "mp4-url" || selectedInput.id === "mp3-url") {
-                const quizType = assessmentAction === "download" ? "MIX" : questionType.id;
-                const quizCount = assessmentAction === "download" ? "15" : questionCount.id;
-                const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty.id;
-                
                 data = await generateQuizFromMediaUrl(inputValue, quizCount, quizDifficulty, quizType);
             } 
             else if (selectedInput.id === "document") {
-                const quizType = assessmentAction === "download" ? "MIX" : questionType.id;
-                const quizCount = assessmentAction === "download" ? "15" : questionCount.id;
-                const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty.id;
-                
                 data = await generateQuizFromDocument(file, quizCount, quizDifficulty, quizType);
             } 
             else {
                 throw new Error("Unsupported input type");
             }
             
-            navigate(`/attemptquiz/${data.assessmentId}`);
+            // If action is download, generate and download PDF
+            if (assessmentAction === "download") {
+                try {
+                    // Parse the assessment data
+                    let questions;
+                    if (data.questions) {
+                        questions = data.questions;
+                    } else if (data.assessment) {
+                        questions = typeof data.assessment === 'string' 
+                            ? JSON.parse(data.assessment) 
+                            : data.assessment;
+                    } else if (typeof data === 'string') {
+                        questions = JSON.parse(data);
+                    }
+                    
+                    // Generate a title based on content
+                    const sourceTitle = selectedInput.acceptsFile 
+                        ? file.name.split('.')[0] 
+                        : inputValue.substring(0, 30);
+                    
+                    const pdfTitle = `Assessment - ${sourceTitle}`;
+                    
+                    // Generate and download the PDF
+                    generateAssessmentPDF(questions, pdfTitle);
+                    
+                    // Show toast notification for successful download
+                    toast.success('Assessment PDF downloaded successfully!', {
+                        icon: '📄',
+                        duration: 6000,
+                        style: {
+                            borderRadius: '10px',
+                            background: '#33ff33',
+                            // color green
+                            // color: '#33ff33',
+                        },
+                    });
+                    
+                    // Still navigate to attempt quiz
+//                     navigate(`/attemptquiz/${data.assessmentId}`);
+                } catch (pdfError) {
+                    console.error('Error generating PDF:', pdfError);
+                    setError(`PDF generation failed: ${pdfError.message}. Redirecting to quiz page.`);
+                    
+                    toast.error('Failed to download PDF. Taking you to the assessment page.');
+                    
+                    // Navigate to attempt quiz if PDF generation fails
+//                     setTimeout(() => {
+//                             navigate(`/attemptquiz/${data.assessmentId}`);
+//                     }, 3000);
+                }
+            } else {
+                // For "take" action, simply navigate to the quiz
+                navigate(`/attemptquiz/${data.assessmentId}`);
+            }
         } catch (err) {
             setError(err.message);
+            toast.error(`Error: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -337,7 +379,7 @@ const GenerateQuiz = () => {
             
             <div className="container mx-auto px-6 -mt-12">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Generate Your Quiz</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Generate Your Assessment</h2>
                     <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 to-indigo-600 mx-auto mb-6"></div>
                 </div>
 
