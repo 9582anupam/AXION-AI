@@ -8,7 +8,7 @@ const app = express();
 
 // Middleware Setup
 const corsOptions = {
-    origin: ["http://localhost:3000", "https://Axion-AI-frontend-green.vercel.app"], // Allow your frontend domain and others
+    origin: ["http://localhost:3000", "https://axion-ai-frontend.vercel.app"], // Allow your frontend domain and others
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Enable cookies in requests and responses
