@@ -60,7 +60,7 @@ const assessmentSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["MCQ", "TF", "SHORT_ANSWER", "LONG_ANSWER", "ESSAY", "FILL_IN_BLANK", "MATCHING", "ASSERTION_REASONING"],
+        enum: ["MCQ", "TF", "SHORT_ANSWER", "LONG_ANSWER", "ESSAY", "FILL_IN_BLANK", "MATCHING", "ASSERTION_REASONING", "MIX"],
         default: "MCQ"
     },
     difficulty: {

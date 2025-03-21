@@ -10,8 +10,62 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
 
         // Define JSON structure based on question type
         let jsonStructure = '';
+        let prompt = '';
         
-        if (type === "MCQ") {
+        // Handle MIX type specially
+        if (type === "MIX") {
+            // For MIX type, we'll create an array of different question types
+            const mcqStructure = `{
+                "id": "mcq_number",
+                "type": "MCQ",
+                "question": "the_question_text",
+                "options": ["option_a", "option_b", "option_c", "option_d"],
+                "correctAnswer": "the_correct_option",
+                "explanation": "brief_explanation_of_answer",
+                "reference": "specific_part_of_content_this_relates_to"
+            }`;
+            
+            const shortAnswerStructure = `{
+                "id": "short_number",
+                "type": "SHORT_ANSWER",
+                "question": "the_question_text",
+                "correctAnswer": "the_correct_answer",
+                "explanation": "brief_explanation_of_answer",
+                "reference": "specific_part_of_content_this_relates_to"
+            }`;
+            
+            const longAnswerStructure = `{
+                "id": "long_number",
+                "type": "LONG_ANSWER",
+                "question": "the_question_text",
+                "correctAnswer": "the_correct_answer",
+                "explanation": "comprehensive_explanation_covering_key_points",
+                "reference": "specific_part_of_content_this_relates_to"
+            }`;
+            
+            prompt = `
+                You are an expert assessment creator. Create a ${difficulty} difficulty mixed assessment based on the following content:
+                
+                ${reference}
+                
+                Generate 15 questions total:
+                - 5 multiple choice questions (MCQ) with 4 options each and only one correct option
+                - 5 short answer questions that require 1-2 sentence responses
+                - 5 long answer questions that require paragraph-length responses (3-5 sentences)
+                
+                Format your response as a structured JSON array without any additional explanation. Each question should follow one of these structures based on its type:
+                
+                For MCQ questions:
+                ${mcqStructure}
+                
+                For Short Answer questions:
+                ${shortAnswerStructure}
+                
+                For Long Answer questions:
+                ${longAnswerStructure}
+                
+                Ensure all questions are directly relevant to the content, varied in topic coverage, and appropriate for ${difficulty} difficulty level.`;
+        } else if (type === "MCQ") {
             jsonStructure = `{
             "id": "unique_number",
             "question": "the_question_text",
@@ -51,19 +105,21 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
             }`;
         }
 
-        // Create assessment generation prompt based on parameters
-        const prompt = `
-            You are an expert assessment creator. Create a ${difficulty} difficulty assessment with ${numberOfQuestions} ${type} questions based on the following content:
-
-            ${reference}
-
-            ${getQuestionFormatInstructions(type)}
-
-            Format your response as a structured JSON array without any additional explanation. Each question should have the following structure:
-            ${jsonStructure}
-
-            Ensure questions are directly relevant to the content, varied in topic coverage, and appropriate for ${difficulty} difficulty level.`;
-
+        // Create assessment generation prompt based on parameters for non-MIX types
+        if (type !== "MIX") {
+            prompt = `
+                You are an expert assessment creator. Create a ${difficulty} difficulty assessment with ${numberOfQuestions} ${type} questions based on the following content:
+    
+                ${reference}
+    
+                ${getQuestionFormatInstructions(type)}
+    
+                Format your response as a structured JSON array without any additional explanation. Each question should have the following structure:
+                ${jsonStructure}
+    
+                Ensure questions are directly relevant to the content, varied in topic coverage, and appropriate for ${difficulty} difficulty level.`;
+        }
+        
         const result = await model.generateContent(prompt);
         const response = await result.response;
         return response.text();

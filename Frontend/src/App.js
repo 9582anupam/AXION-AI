@@ -9,7 +9,7 @@ import Unauthenticated from "./routes/Unauthenticated";
 import UserProvider from "./context/UserContext";
 import { Toaster } from 'react-hot-toast';
 import Profile from "./components/pages/profile/Profile";
-import GenerateQuiz from "./components/pages/quiz/GenerateQuiz";
+import GenerateQuiz from "./components/pages/quiz/generateQuiz/GenerateQuiz";
 import QuizAttempt from "./components/pages/quiz/QuizAttempt";
 import QuizResults from "./components/pages/quiz/QuizResults";
 import ExploreQuiz from "./components/pages/quiz/ExploreQuiz";
