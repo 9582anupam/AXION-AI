@@ -1,4 +1,6 @@
-import {  generateBotResponse } from "../services/chatbot.service.js";
+import { generateBotResponse } from "../services/chatbot.service.js";
+import { getSubtitles } from 'youtube-captions-scraper';
+
 
 export const getBotResponse = async (req, res) => {
     try {
@@ -11,3 +13,17 @@ export const getBotResponse = async (req, res) => {
         });
     }
 };
+
+export const fetchSubtitles = async (req, res) => {
+    const { videoID = "JC82Il2cjqA", lang = 'en' } = req.query;
+    try {
+        const subtitles = await getSubtitles({ videoID, lang });
+        res.status(200).json({ subtitles });
+    } catch (error) {
+        console.error('Error fetching subtitles:', error);
+        res.status(500).json({ 
+            message: 'Error fetching subtitles' 
+        });
+    }
+};
+
