@@ -49,7 +49,7 @@ const CloudinaryUploadTab = ({
       }
     } catch (error) {
       if (onError) {
-        onError(error.message || 'Failed to generate quiz');
+        onError(error.message || 'Failed to generate Assessment');
       }
     } finally {
       setIsGenerating(false);
@@ -84,7 +84,7 @@ const CloudinaryUploadTab = ({
               : 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white hover:from-cyan-600 hover:to-indigo-700'
             } transition-colors`}
         >
-          {isGenerating ? 'Generating Quiz...' : 'Generate Quiz'}
+          {isGenerating ? 'Generating Assessment...' : 'Generate Assessment'}
         </button>
       )}
     </div>

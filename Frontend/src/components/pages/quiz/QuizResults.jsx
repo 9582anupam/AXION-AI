@@ -34,7 +34,7 @@ const QuizResults = () => {
     }
 
     const handleShare = () => {
-        const shareText = `Check out this quiz on Axion-AI!\n\nTry it here: ${window.location.origin}/attemptquiz/${assessmentId}`;
+        const shareText = `Check out this Assessment on Axion-AI!\n\nTry it here: ${window.location.origin}/attemptquiz/${assessmentId}`;
         
         if (navigator.share) {
             navigator.share({
@@ -73,7 +73,7 @@ const QuizResults = () => {
             <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-6 border-b border-slate-700 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-indigo-600/10 opacity-50"></div>
                 <div className="relative">
-                <h2 className="text-3xl font-bold text-slate-100 mb-1">Quiz Results</h2>
+                <h2 className="text-3xl font-bold text-slate-100 mb-1">Assessment Results</h2>
                 <div className="flex flex-wrap items-center gap-2 text-slate-400 text-sm">
                     <span className="px-2 py-1 bg-slate-800 rounded-full">Score: {score} / {maxScore}</span>
                     <span>•</span>
@@ -235,7 +235,7 @@ const QuizResults = () => {
                     onClick={handleShare}
                 >
                     <Share2 className="mr-2 h-4 w-4" />
-                    Share Quiz
+                    Share Assessment
                 </button>
                 <button
                     className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all duration-300 flex items-center"

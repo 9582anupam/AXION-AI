@@ -85,7 +85,7 @@ const QuizAttempt = () => {
             <div className="min-h-screen bg-slate-950 flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-300 text-lg">Loading quiz...</p>
+                    <p className="text-slate-300 text-lg">Loading Assessment...</p>
                 </div>
             </div>
         )
@@ -101,7 +101,7 @@ const QuizAttempt = () => {
                 <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-6 border-b border-slate-700">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                         <div>
-                            <h2 className="text-2xl font-bold text-slate-100">Quiz Assessment</h2>
+                            <h2 className="text-2xl font-bold text-slate-100"> Assessment</h2>
                             <p className="text-slate-400 text-sm mt-1">
                                 {quizData.type} • {quizData.difficulty} • {quizData.questions.length} questions
                             </p>
@@ -183,7 +183,7 @@ const QuizAttempt = () => {
                             onClick={handleNextQuestion}
                             disabled={!isAnswered}
                         >
-                            {currentQuestionIndex === quizData.questions.length - 1 ? "Finish Quiz" : "Next Question"}
+                            {currentQuestionIndex === quizData.questions.length - 1 ? "Finish Assessment" : "Next Question"}
                             <ChevronRight className="h-4 w-4" />
                         </button>
                     </div>

@@ -1,12 +1,12 @@
 # Axion-AI
 
-Axion-AI is an intelligent assessment platform that transforms learning materials into interactive quizzes using AI. Create, take, and analyze assessments from various content formats including YouTube videos, documents, and audio files.
+Axion-AI is an intelligent assessment platform that transforms learning materials into interactive Assessmentzes using AI. Create, take, and analyze assessments from various content formats including YouTube videos, documents, and audio files.
 
 
 
 ## Features
 
-- **Content-to-Quiz Generation**: Convert YouTube videos, PDFs, PPTs, and audio/video files into quizzes
+- **Content-to-Assessment Generation**: Convert YouTube videos, PDFs, PPTs, and audio/video files into Assessmentzes
 - **Chrome Extension**: Generate assessments directly from web content without leaving your current tab
 - **Multilingual Support**: Generate assessments in multiple languages
 - **Rich Assessment Types**: MCQ, True/False, Fill-in-the-blank, and more
@@ -25,7 +25,7 @@ The main web application provides a comprehensive interface for assessment creat
 ### Chrome Extension
 Located in the `/filter` folder, our Chrome extension allows users to:
 - Generate assessments from any webpage or YouTube video without switching tabs
-- Summarize content and create quizzes with a single click
+- Summarize content and create Assessmentzes with a single click
 - Access their Axion-AI account and assessments directly from the browser
 - Save assessments for later use or share them instantly
 - Control assessment parameters (difficulty, question count, type) directly in the extension
@@ -139,9 +139,9 @@ npm run build
 - `GET /api/v1/users/profile` - Get user profile
 
 ### Assessment Generation
-- `POST /api/v1/assessmentGenerate/youtube` - Generate quiz from YouTube video
-- `POST /api/v1/assessmentGenerate/media` - Generate quiz from audio/video file
-- `POST /api/v1/assessmentGenerate/document` - Generate quiz from PDF/PPT
+- `POST /api/v1/assessmentGenerate/youtube` - Generate Assessment from YouTube video
+- `POST /api/v1/assessmentGenerate/media` - Generate Assessment from audio/video file
+- `POST /api/v1/assessmentGenerate/document` - Generate Assessment from PDF/PPT
 
 ### Assessment Management
 - `GET /api/v1/exploreAssessment/all` - Get all assessments
@@ -161,10 +161,10 @@ npm run build
 - Educator Login
 - Progressive Web App
 - Multilingual Support
-- Real-time collaborative quiz taking
+- Real-time collaborative Assessment taking
 - Enhanced analytics dashboard
 - Mobile application
-- Mix quiz templates
+- Mix Assessment templates
 - More assessment types (coding exercises, etc.)
 - LMS integration
 - Extension support for more browsers (Firefox, Edge, Safari)

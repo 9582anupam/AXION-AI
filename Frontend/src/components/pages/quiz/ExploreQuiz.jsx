@@ -68,7 +68,7 @@ const ExploreQuiz = () => {
             <div className="min-h-screen bg-slate-950 flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-300 text-lg">Loading quizzes...</p>
+                    <p className="text-slate-300 text-lg">Loading Assessments...</p>
                 </div>
             </div>
         )
@@ -98,7 +98,7 @@ const ExploreQuiz = () => {
                 <div className="text-center mb-12">
                     <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white">Explore Assessments</h1>
                     <p className="text-slate-400 max-w-2xl mx-auto">
-                        Discover and take quizzes created by our community. Search for specific topics or browse all available assessments.
+                        Discover and take Assessments created by our community. Search for specific topics or browse all available assessments.
                     </p>
                 </div>
 
@@ -207,7 +207,7 @@ const QuizCard = ({ quiz }) => {
                 <span>{formatDate(quiz.createdAt)}</span>
             </div>
             <button className="text-cyan-400 text-sm font-medium flex items-center">
-                Take Quiz <ArrowRight className="h-4 w-4 ml-1" />
+                Take Assessment <ArrowRight className="h-4 w-4 ml-1" />
             </button>
             </div>
         </div>

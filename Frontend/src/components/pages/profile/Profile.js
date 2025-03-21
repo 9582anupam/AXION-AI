@@ -359,7 +359,7 @@ const QuizResultCard = ({ quiz, isCreated = false }) => {
                     to={`/attemptquiz/${quiz.id}`}
                     className={`w-full text-center py-2 px-4 rounded-lg bg-gradient-to-r ${isCreated ? 'from-green-500 to-emerald-700' : 'from-cyan-500 to-blue-700'} text-white font-medium flex items-center justify-center`}
                 >
-                    Reattempt Quiz
+                    Reattempt Assessment
                     <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
                 <Link

@@ -104,10 +104,10 @@ const DirectMediaUrlForm = () => {
       if (result?.assessmentId) {
         navigate(`/attemptquiz/${result.assessmentId}`);
       } else {
-        throw new Error('Failed to generate quiz');
+        throw new Error('Failed to generate Assessment');
       }
     } catch (err) {
-      setError(err.message || 'Failed to generate quiz');
+      setError(err.message || 'Failed to generate Assessment');
     } finally {
       setIsGenerating(false);
     }
@@ -116,7 +116,7 @@ const DirectMediaUrlForm = () => {
   return (
     <div className="bg-slate-900 p-6 rounded-xl border border-slate-800">
       <h2 className="text-xl font-semibold text-slate-100 mb-4">
-        Generate Quiz from Media URL
+        Generate Assessment from Media URL
       </h2>
       
       <div className="space-y-6">
@@ -218,7 +218,7 @@ const DirectMediaUrlForm = () => {
               : 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white hover:from-cyan-600 hover:to-indigo-700'
           } transition-colors`}
         >
-          {isGenerating ? 'Generating Quiz...' : 'Generate Quiz'}
+          {isGenerating ? 'Generating Assessment...' : 'Generate Assessment'}
         </button>
       </div>
     </div>
