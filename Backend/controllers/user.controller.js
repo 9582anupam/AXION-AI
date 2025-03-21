@@ -121,7 +121,7 @@ const login = async (req, res) => {
         // sending accessToken and refreshToken as cookies
         const options = {
             httpOnly: true,  // Cannot be accessed via JavaScript (only sent with HTTP requests)
-            secure: process.env.NODE_ENV === 'production', // Set to true only in production (for HTTPS)
+            secure: true,
             sameSite: 'None', // Allows cross-origin cookie transmission (important for cross-origin requests)
         };
 
@@ -188,7 +188,7 @@ const refreshAccessToken = async (req, res) => {
 
         const options = {
             httpOnly: true,  // Cannot be accessed via JavaScript (only sent with HTTP requests)
-            secure: process.env.NODE_ENV === 'production', // Set to true only in production (for HTTPS)
+            secure: true,
             sameSite: 'None', // Allows cross-origin cookie transmission (important for cross-origin requests)
         };
 
@@ -197,8 +197,8 @@ const refreshAccessToken = async (req, res) => {
 
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
+            .cookie("accessToken", accessToken, )
+            .cookie("refreshToken", newRefreshToken, )
             .json({
                 status: 200,
                 data: {
@@ -237,13 +237,13 @@ const logout = async (req, res) => {
 
         const options = {
             httpOnly: true,  // Cannot be accessed via JavaScript (only sent with HTTP requests)
-            secure: process.env.NODE_ENV === 'production', // Set to true only in production (for HTTPS)
+            secure: true,
             sameSite: 'None', // Allows cross-origin cookie transmission (important for cross-origin requests)
         };
         return res
             .status(200)
-            .clearCookie("accessToken", options)
-            .clearCookie("refreshToken", options)
+            .clearCookie("accessToken", )
+            .clearCookie("refreshToken", )
             .json({
                 status: 200,
                 message: "User logged out successfully",
@@ -281,6 +281,30 @@ const getMe = async (req, res) => {
     }
 };
 
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({})
+            .select('name tokens _id')
+            .sort({ tokens: -1 });  // Sort in descending order of tokens
+        
+        return res.status(200).json({
+            status: 200,
+            leaderboard: users,
+            message: "Leaderboard fetched successfully",
+            success: true,
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message,
+            status: 500,
+            success: false,
+        });
+    }
+};
+
+
 
 const putData = async (req, res) => {
     try {
@@ -310,4 +334,4 @@ const putData = async (req, res) => {
 };
 
 
-export { signUp, login, refreshAccessToken, logout, getMe, putData };
+export { signUp, login, refreshAccessToken, logout, getMe, putData, getAllUsers };

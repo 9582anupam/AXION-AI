@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
     const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
     const [headRotation, setHeadRotation] = useState({ x: 0, y: 0 });
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -54,7 +56,7 @@ const HeroSection = () => {
             <p className="text-xl md:text-2xl text-slate-300 mb-10">
                 Generate interactive quizzes and assessments from videos, text, and more
             </p>
-            <button className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-bold rounded-full shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transform transition-all hover:scale-100 flex items-center mx-auto">
+            <button onClick={()=>{navigate("/generatequiz")}} className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-bold rounded-full shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transform transition-all hover:scale-100 flex items-center mx-auto">
                 Start Generating Assessments
                 <ArrowRight className="ml-2 h-5 w-5" />
             </button>

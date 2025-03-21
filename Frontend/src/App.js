@@ -9,10 +9,14 @@ import Unauthenticated from "./routes/Unauthenticated";
 import UserProvider from "./context/UserContext";
 import { Toaster } from 'react-hot-toast';
 import Profile from "./components/pages/profile/Profile";
-
+import GenerateQuiz from "./components/pages/quiz/GenerateQuiz";
+import QuizAttempt from "./components/pages/quiz/QuizAttempt";
+import QuizResults from "./components/pages/quiz/QuizResults";
+import ExploreQuiz from "./components/pages/quiz/ExploreQuiz";
+import LeaderBoard from "./components/pages/quiz/LeaderBoard";
+import ViewQuiz from "./components/pages/quiz/ViewQuiz";
 
 function App() {
-
 
     return (
         <BrowserRouter>
@@ -31,6 +35,10 @@ function App() {
                         <Routes>
                             {/* Public Routes - No Auth Needed */}
                             <Route path="/" element={<Home />} />
+                            <Route path="/exploreQuiz" element={<ExploreQuiz/>}/>
+                            <Route path="/leaderboard" element={<LeaderBoard />} />
+                            <Route path="/viewquiz/:assessmentId" element={<ViewQuiz />} />
+
 
                             {/* Unauthenticated Routes - Only Accessible When Logged Out */}
                             <Route element={<Unauthenticated />}>
@@ -41,6 +49,9 @@ function App() {
                             {/* Protected Routes - Only Accessible When Logged In */}
                             <Route element={<ProtectedRoutes />}>
                                 <Route path="/profile" element={<Profile />} />
+                                <Route path="/generatequiz" element={<GenerateQuiz />} />
+                                <Route path="/attemptquiz/:assessmentId" element={<QuizAttempt/>} />
+                                <Route path="/quizResults/:assessmentId" element={<QuizResults />} />
                             </Route>
 
                         </Routes>
