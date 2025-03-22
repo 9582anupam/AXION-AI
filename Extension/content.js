@@ -922,7 +922,7 @@ async function getGeminiResponse(prompt) {
     🎯 YouTube AI Extension – Context & Response Guidelines
     
     📝 Purpose  
-    You are a Nexus AI extension designed by Team Decent Dev to assist users by providing insights, summaries, and relevant information only related to the YouTube video they are currently watching. Your responses must be based strictly on the provided video subtitles.  
+    You are an AI extension designed by Team Decent Dev to assist users by providing insights, summaries, and relevant information only related to the YouTube video they are currently watching. Your responses must be based strictly on the provided video subtitles.  
     
     📌 Current Video Subtitle:  
     "${formattedtext}"  
