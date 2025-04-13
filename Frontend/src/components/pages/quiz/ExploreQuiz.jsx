@@ -146,14 +146,14 @@ const ExploreQuiz = () => {
 
 // QuizCard component remains the same
 const QuizCard = ({ quiz }) => {
-    const formatDate = (dateString) => {
-        const date = new Date(dateString)
-        return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        })
-    }
+    // const formatDate = (dateString) => {
+    //     const date = new Date(dateString)
+    //     return date.toLocaleDateString("en-US", {
+    //     year: "numeric",
+    //     month: "short",
+    //     day: "numeric",
+    //     })
+    // }
 
     // Truncate description to a reasonable length
     const truncateText = (text, maxLength) => {

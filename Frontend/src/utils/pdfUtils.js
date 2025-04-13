@@ -134,6 +134,7 @@ export const generateAssessmentPDF = (assessmentData, title = "Generated Assessm
 
     if (questions.filter(q => q.type === "LONG_ANSWER").length > 0) {
       yPosition = addQuestionSection("Long Answer Questions", questions.filter(q => q.type === "LONG_ANSWER"), yPosition)
+      // eslint-disable-next-line
       yPosition += lineHeight
     }
 
