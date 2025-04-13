@@ -96,12 +96,6 @@ const documentFields = [
  * Generate assessment from YouTube video
  */
 const generateAssessmentFromYoutube = async (req, res) => {
-    console.log("I was here");
-    console.log("req.body", await req.body);
-    // return res.status(200).json({
-    //     success: false,
-    //     message: 'This endpoint is deprecated. Please use /media instead.'
-    // });
     try {
         const { videoUrl, numberOfQuestions = 5, difficulty = 'medium', type = 'MCQ', language
         } = await req.body;
@@ -113,11 +107,9 @@ const generateAssessmentFromYoutube = async (req, res) => {
             });
         }
 
-        console.log("languagee", language);
         // Extract video ID
         const videoId = ytdl.getURLVideoID(videoUrl);
         let transcript;
-        console.log(videoId)
 
         // Try Python service first
    
