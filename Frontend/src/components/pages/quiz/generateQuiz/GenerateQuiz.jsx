@@ -23,6 +23,7 @@ import { FileText, Youtube, Video, Music } from "lucide-react";
 const GenerateQuiz = () => {
     // State management
     const [selectedInput, setSelectedInput] = useState(null);
+    const [language, setLanguage] = useState(null);
     const [file, setFile] = useState(null);
     const [inputValue, setInputValue] = useState("");
     const [error, setError] = useState("");
@@ -38,6 +39,9 @@ const GenerateQuiz = () => {
     const [assessmentAction, setAssessmentAction] = useState(null);
     const [isDownloading, setIsDownloading] = useState(false);
     
+    console.log(selectedInput)
+
+
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
 
@@ -118,6 +122,21 @@ const GenerateQuiz = () => {
         { id: "MATCHING", name: "Matching Questions" }
     ];
 
+    // create object woth below values and id as above
+    // "English", 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'
+    const languageOptions = [
+        { id: "English", name: "English" },
+        { id: "Hindi", name: "Hindi" },
+        { id: "Tamil", name: "Tamil" },
+        { id: "Telugu", name: "Telugu" },
+        { id: "Kannada", name: "Kannada" },
+        { id: "Malayalam", name: "Malayalam" },
+        { id: "Bengali", name: "Bengali" },
+        { id: "Marathi", name: "Marathi" },
+        { id: "Gujarati", name: "Gujarati" },
+        { id: "Punjabi", name: "Punjabi" }
+    ]
+
     // Event handlers
     const handleInputTypeSelect = (inputType) => {
         setSelectedInput(inputType);
@@ -134,6 +153,10 @@ const GenerateQuiz = () => {
 
     const handleQuestionCountSelect = (count) => {
         setQuestionCount(count);
+    };
+
+    const handleLanguageSelect = (lang) => {
+        setLanguage(lang);
     };
 
     const handleQuestionTypeSelect = (type) => {
@@ -279,7 +302,7 @@ const GenerateQuiz = () => {
             const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty.id;
             
             if (selectedInput.id === "youtube") {
-                data = await generateQuizFromYoutube(inputValue, quizCount, quizDifficulty, quizType);
+                data = await generateQuizFromYoutube(inputValue, quizCount, quizDifficulty, quizType, language.name);
             } 
             else if (selectedInput.id === "mp4-local" || selectedInput.id === "mp3-local") {
                 if (cloudinaryUrl && cloudinaryData) {
@@ -287,6 +310,7 @@ const GenerateQuiz = () => {
                         cloudinaryUrl, 
                         quizCount, 
                         quizDifficulty,
+                        language.name,
                         quizType,
                         {
                             deleteAfterProcessing: true,
@@ -299,16 +323,17 @@ const GenerateQuiz = () => {
                         file, 
                         quizCount, 
                         quizDifficulty, 
+                        language.name,
                         quizType,
                         true
                     );
                 }
             }
             else if (selectedInput.id === "mp4-url" || selectedInput.id === "mp3-url") {
-                data = await generateQuizFromMediaUrl(inputValue, quizCount, quizDifficulty, quizType);
+                data = await generateQuizFromMediaUrl(inputValue, quizCount, quizDifficulty, quizType, language.name);
             } 
             else if (selectedInput.id === "document") {
-                data = await generateQuizFromDocument(file, quizCount, quizDifficulty, quizType);
+                data = await generateQuizFromDocument(file, quizCount, quizDifficulty, quizType, language.name);
             } 
             else {
                 throw new Error("Unsupported input type");
@@ -337,7 +362,7 @@ const GenerateQuiz = () => {
                     const pdfTitle = `Assessment - ${sourceTitle}`;
                     
                     // Generate and download the PDF
-                    generateAssessmentPDF(questions, pdfTitle);
+                    generateAssessmentPDF(questions, pdfTitle, language.name);
                     
                     // Show toast notification for successful download
                     toast.success('Assessment successfully downloaded!', {
@@ -474,7 +499,7 @@ const GenerateQuiz = () => {
                             <>
                                 {/* Action Selection Options */}
                                 {!assessmentAction ? (
-                                    <ActionSelector onActionSelect={handleActionSelect} />
+                                    <ActionSelector inputType={selectedInput.id} url={inputValue} onActionSelect={handleActionSelect} />
                                 ) : (
                                     <>
                                         {/* Show configuration options only for "take" option */}
@@ -489,11 +514,14 @@ const GenerateQuiz = () => {
                                                 onDifficultySelect={handleDifficultySelect}
                                                 onQuestionCountSelect={handleQuestionCountSelect}
                                                 onQuestionTypeSelect={handleQuestionTypeSelect}
+                                                onLanguageSelect={handleLanguageSelect}
+                                                language={language}
+                                                languageOptions={languageOptions}
                                             />
                                         )}
                                         
                                         {/* For download option, show info about what they'll get */}
-                                        {assessmentAction === "download" && <DownloadInfo />}
+                                        {assessmentAction === "download" && <DownloadInfo  language={language} onLanguageSelect={handleLanguageSelect} />}
 
                                         {/* Submit Button */}
                                         <div className="flex gap-4">

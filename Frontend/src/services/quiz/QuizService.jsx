@@ -15,14 +15,17 @@ const generateQuizFromYoutube = async (
     videoUrl,
     numberOfQuestions = 5,
     difficulty = "medium",
-    type = "MCQ"
+    type = "MCQ",
+    language
 ) => {
+    console.log(language)
     try {
         const response = await userAxiosInstance1.post("/youtube", {
             videoUrl,
             numberOfQuestions,
             difficulty,
             type,
+            language
         });
         return response.data;
     } catch (error) {
@@ -38,6 +41,7 @@ const generateQuizFromMediaUrl = async (
     mediaUrl,
     numberOfQuestions = 5,
     difficulty = "medium",
+    language ,
     type = "MCQ",
     options = {}
 ) => {
@@ -46,13 +50,14 @@ const generateQuizFromMediaUrl = async (
         cloudinaryPublicId = null,
         resourceType = 'video'  // Default to video for audio/video files
     } = options;
-    
+    console.log(language)
     try {
         const response = await userAxiosInstance1.post("/media-url", {
             mediaUrl,
             numberOfQuestions,
             difficulty,
             type,
+            language,
             deleteAfterProcessing,
             cloudinaryPublicId,
             resourceType
@@ -71,7 +76,9 @@ const generateQuizFromMedia = async (
     file,
     numberOfQuestions = 5,
     difficulty = "medium",
-    type = "MCQ"
+    language = "English",
+    type = "MCQ",
+    
 ) => {
     try {
         // Always use Cloudinary approach - no fallback to local
@@ -97,6 +104,7 @@ const generateQuizFromMedia = async (
             cloudinaryResult.url,
             numberOfQuestions,
             difficulty,
+            language,
             type,
             {
                 deleteAfterProcessing: true,
@@ -117,7 +125,9 @@ const generateQuizFromDocumentUrl = async (
     documentUrl,
     numberOfQuestions = 5,
     difficulty = "medium",
+    language,
     type = "MCQ",
+    
     options = {}
 ) => {
     const { 
@@ -130,6 +140,7 @@ const generateQuizFromDocumentUrl = async (
         const response = await userAxiosInstance1.post("/document-url", {
             documentUrl,
             numberOfQuestions,
+            language,
             difficulty,
             type,
             deleteAfterProcessing,
@@ -150,7 +161,8 @@ const generateQuizFromDocument = async (
     file,
     numberOfQuestions = 5,
     difficulty = "medium",
-    type = "MCQ"
+    type = "MCQ",
+    language
 ) => {
     try {
         // Upload document to Cloudinary first
@@ -175,6 +187,7 @@ const generateQuizFromDocument = async (
             cloudinaryResult.url,
             numberOfQuestions,
             difficulty,
+            language,
             type,
             {
                 deleteAfterProcessing: true,
@@ -214,15 +227,21 @@ const fetchQuizData = async (assessmentId) => {
     }
 };
 
-const askAssessment = async (assessmentId, question) => {
+const askAssessment = async (assessmentId, questionData) => {
     try {
         const reference = await fetchQuizData(assessmentId);
-        console.log(reference.result);
+        // console.log(reference.result);
+        
+        // Extract question and optional language from questionData
+        const { question, language } = questionData;
+        // console.log("Asking assessment with question:", question);
+        
         const response = await userAxiosInstance3.post(
             `/ask-assessment/${assessmentId}`,
             {
                 reference,
                 question,
+                language
             }
         );
         return response.data;

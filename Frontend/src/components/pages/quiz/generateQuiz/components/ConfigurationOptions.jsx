@@ -10,6 +10,9 @@ const ConfigurationOptions = ({
   onDifficultySelect,
   onQuestionCountSelect,
   onQuestionTypeSelect,
+  languageOptions,
+  onLanguageSelect,
+  language
 }) => {
   return (
     <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -39,6 +42,20 @@ const ConfigurationOptions = ({
         onSelect={onQuestionTypeSelect}
         placeholder="Select question type..."
       />
+      <DropdownSelector
+        label="Language"
+        options={languageOptions}
+        selectedOption={language}
+        onSelect={onLanguageSelect}
+        placeholder="Select language..."
+      />
+        {/* <DropdownSelector
+        label="Language"
+        options={languageOptions}
+        selectedOption={language}
+        onSelect={onLanguageSelect}
+        placeholder="Select language..."
+      /> */}
     </div>
   );
 };

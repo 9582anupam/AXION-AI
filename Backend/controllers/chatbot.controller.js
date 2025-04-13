@@ -19,7 +19,7 @@ const getBotResponse = async (req, res) => {
 
 const askAssessment = async (req, res) => {
     try {
-        const { question, reference } = req.body;
+        const { question, reference, language = "English" } = req.body;
         
         // Format the reference data
         const formattedReference = {
@@ -31,8 +31,8 @@ const askAssessment = async (req, res) => {
             questions: reference.result.questions
         };
 
-        // extract transcript from assessment model
-        const response = await askAssessmentService(formattedReference, question);
+        // Pass language to the service
+        const response = await askAssessmentService(formattedReference, question, language);
 
         res.status(200).json({
             response,

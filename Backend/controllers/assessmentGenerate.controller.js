@@ -14,6 +14,7 @@ import { extractTextFromPptFile } from '../helper/pptToText.js';
 import { saveAssessment } from '../helper/saveAssessment.js';
 import User from "../models/user.model.js";
 import { uploadBufferToCloudinary } from '../helper/cloudinaryHelper.js';
+import { console } from 'inspector';
 
 // Setup paths
 const __filename = fileURLToPath(import.meta.url);
@@ -95,9 +96,16 @@ const documentFields = [
  * Generate assessment from YouTube video
  */
 const generateAssessmentFromYoutube = async (req, res) => {
+    console.log("I was here");
+    console.log("req.body", await req.body);
+    // return res.status(200).json({
+    //     success: false,
+    //     message: 'This endpoint is deprecated. Please use /media instead.'
+    // });
     try {
-        const { videoUrl, numberOfQuestions = 5, difficulty = 'medium', type = 'MCQ' } = req.body;
-
+        const { videoUrl, numberOfQuestions = 5, difficulty = 'medium', type = 'MCQ', language
+        } = await req.body;
+        
         if (!videoUrl) {
             return res.status(400).json({
                 success: false,
@@ -105,18 +113,31 @@ const generateAssessmentFromYoutube = async (req, res) => {
             });
         }
 
+        console.log("languagee", language);
         // Extract video ID
         const videoId = ytdl.getURLVideoID(videoUrl);
         let transcript;
+        console.log(videoId)
 
         // Try Python service first
+   
+    try {
+        const response = await axios.get(`https://yt-transcript-testing.vercel.app/api/transcript/${videoId}`, { timeout: 15000 });
+        transcript = response.data.transcript;
+        transcript = transcript.map((obj) => obj.text).join('\n');
+    } catch (error) {
+        console.log('Transcript scrape service failed, falling back to product-answer');
+
         try {
-            const pythonResponse = await axios.get(`https://product-answer.vercel.app/api/transcript/${videoId}`, { timeout: 15000 });
+            const pythonResponse = await axios.get(`https://transcript-scrape.vercel.app/api/getTranscript/${videoId}`, { timeout: 15000 });
             transcript = pythonResponse.data.transcript;
             transcript = transcript.map((obj) => obj.text).join('\n');
-        } catch (error) {
-            console.log('Python service failed, falling back to manual extraction');
+        } catch (fallbackError) {
+            console.log('Both services failed:', fallbackError.message);
         }
+    }
+
+
 
         // If Python service failed, extract manually
         if (!transcript) {
@@ -124,6 +145,7 @@ const generateAssessmentFromYoutube = async (req, res) => {
             const transcriptionResult = await transcribeAudioVideo(audioPath);
             transcript = transcriptionResult.text;
         }
+
 
         if (!transcript) {
             return res.status(400).json({
@@ -133,7 +155,7 @@ const generateAssessmentFromYoutube = async (req, res) => {
         }
 
         // Generate assessment
-        const assessmentJson = await generateAssessmentPromptCall(transcript, type, numberOfQuestions, difficulty);
+        const assessmentJson = await generateAssessmentPromptCall(transcript, type, numberOfQuestions, difficulty, language);
         let assessment;
 
         try {
@@ -155,6 +177,7 @@ const generateAssessmentFromYoutube = async (req, res) => {
                     videoId,
                     type,
                     difficulty,
+                    language,
                     source: 'youtube',
                     transcript: JSON.stringify(transcript)
                 },
@@ -412,6 +435,7 @@ const generateAssessmentFromDocument = async (req, res) => {
  * Generate assessment from document URL (PDF/PPT from Cloudinary or other source)
  */
 const generateAssessmentFromDocumentUrl = async (req, res) => {
+    console.log("I was here in document URL");
     const timeoutId = setTimeout(() => {
         res.status(504).json({ success: false, message: 'Request timed out' });
     }, 180000); // 3 minutes timeout
@@ -422,10 +446,12 @@ const generateAssessmentFromDocumentUrl = async (req, res) => {
             numberOfQuestions = 5,
             difficulty = 'medium',
             type = 'MCQ',
+            language,
             deleteAfterProcessing = false,
             cloudinaryPublicId = null,
             resourceType = 'raw'  // Default resource type for documents
         } = req.body;
+        console.log(req.body);
 
         if (!documentUrl) {
             clearTimeout(timeoutId);
@@ -516,7 +542,7 @@ const generateAssessmentFromDocumentUrl = async (req, res) => {
         console.log(`Generating ${numberOfQuestions} ${difficulty} ${type} questions...`);
 
         // Generate assessment
-        const assessmentJson = await generateAssessmentPromptCall(documentText, type, numberOfQuestions, difficulty);
+        const assessmentJson = await generateAssessmentPromptCall(documentText, type, numberOfQuestions, difficulty, language);
 
         // Parse result
         let assessment;

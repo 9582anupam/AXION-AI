@@ -1,6 +1,22 @@
 import { FileCheck, Download, Bookmark } from "lucide-react";
+import DropdownSelector from "./DropdownSelector";
+const languageOptions = [
+  { id: "English", name: "English" },
+  { id: "Hindi", name: "Hindi" },
+  { id: "Tamil", name: "Tamil" },
+  // { id: "Telugu", name: "Telugu" },
+  // { id: "Kannada", name: "Kannada" },
+  { id: "Malayalam", name: "Malayalam" },
+  { id: "Spanish", name: "Spanish"},
+  { id: "French", name: "French" },
 
-const DownloadInfo = () => {
+  // { id: "Bengali", name: "Bengali" },
+  // { id: "Marathi", name: "Marathi" },
+  // { id: "Gujarati", name: "Gujarati" },
+  // { id: "Punjabi", name: "Punjabi" }
+]
+
+const DownloadInfo = ({language, onLanguageSelect}) => {
   return (
     <div className="mb-8 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-6 border border-cyan-900/50 shadow-lg">
       <div className="flex items-start mb-4">
@@ -11,6 +27,14 @@ const DownloadInfo = () => {
           Your Assessment Package Details
         </h3>
       </div>
+
+      <DropdownSelector
+        label="Language"
+        options={languageOptions}
+        selectedOption={language}
+        onSelect={onLanguageSelect}
+        placeholder="Select language..."
+      />
       
       <p className="text-slate-300 mb-4">
         You'll receive a professionally formatted PDF assessment with:

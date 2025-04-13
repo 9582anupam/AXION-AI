@@ -11,12 +11,13 @@
   "author": "Anupam",
   "license": "MIT",
   "dependencies": {
-    "@distube/ytdl-core": "^4.16.4",
+    "@distube/ytdl-core": "^4.16.8",
     "@google/generative-ai": "^0.2.1",
     "axios": "^1.6.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
+    "cloudinary": "^1.41.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -31,14 +32,13 @@
     "npm": "^10.9.2",
     "path": "^0.12.7",
     "pdf-parse": "^1.1.1",
+    "streamifier": "^0.1.1",
     "uuid": "^9.0.1",
     "xml2js": "^0.6.2",
     "youtube-caption-extractor": "^1.4.3",
     "youtube-captions-scraper": "^2.0.3",
     "youtube-subs": "^1.1.0",
-    "ytdl-core": "^4.11.5",
-    "cloudinary": "^1.41.0",
-    "streamifier": "^0.1.1"
+    "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
     "@types/pdf-parse": "^1.1.4"

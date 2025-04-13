@@ -843,7 +843,7 @@ async function fetchSubTitleIfVideoChanged() {
 // Function to fetch subtitle from the video transcript
 async function fetchSubTitle(videoId) {
     try {
-        const response = await fetch(`https://product-answer.vercel.app/api/transcript/${videoId}`);
+        const response = await fetch(`https://yt-transcript-testing.vercel.app/api/transcript/${videoId}`);
         if (response.ok) {
             videoSubTitle = await response.json();
         } else {

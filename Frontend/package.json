@@ -12,8 +12,11 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.29",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.475.0",
+    "pdfmake": "^0.2.18",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2",
@@ -21,9 +24,7 @@
     "react-scripts": "5.0.1",
     "vite": "^5.4.11",
     "web-vitals": "^2.1.4",
-    "yocto-queue": "^1.0.0",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.5.29"
+    "yocto-queue": "^1.0.0"
   },
   "scripts": {
     "start": "react-scripts start",

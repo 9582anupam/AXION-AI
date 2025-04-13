@@ -204,7 +204,7 @@ const QuizCard = ({ quiz }) => {
             <div className="flex justify-between items-center pt-4 border-t border-slate-800">
             <div className="text-slate-500 text-xs flex items-center">
                 <Clock className="h-3 w-3 mr-1" />
-                <span>{formatDate(quiz.createdAt)}</span>
+                {/* <span>{formatDate(quiz.createdAt)}</span> */}
             </div>
             <button className="text-cyan-400 text-sm font-medium flex items-center">
                 Take Assessment <ArrowRight className="h-4 w-4 ml-1" />

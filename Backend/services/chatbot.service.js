@@ -20,7 +20,7 @@ export const generateBotResponse = async () => {
     }
 };
 
-export const askAssessmentService = async (reference, question) => {
+export const askAssessmentService = async (reference, question, language = "English") => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         
@@ -52,11 +52,11 @@ ${q.explanation ? `Explanation: ${q.explanation}` : ''}
 Result: ${q.isCorrect ? 'Correct' : 'Incorrect'}
 `).join('\n')}
 
-Based on the above context, please answer the following question:
-${question.question}
+Based on the above context, please answer the following question. Your response should be in ${language} language:
+${question}
 `;
 
-        console.log('Formatted reference:', formattedReference);
+        console.log('Sending request with language:', language);
         const result = await model.generateContent(formattedReference);
         const response = await result.response;
         return response.text();
