@@ -15,6 +15,10 @@ import { saveAssessment } from '../helper/saveAssessment.js';
 import User from "../models/user.model.js";
 import { uploadBufferToCloudinary } from '../helper/cloudinaryHelper.js';
 import { console } from 'inspector';
+// Import new helper functions
+import extractYouTubeTranscript from '../helper/extractYouTubeTranscript.js';
+import extractMediaTranscript from '../helper/extractMediaTranscript.js';
+import extractDocumentText from '../helper/extractDocumentText.js';
 
 // Setup paths
 const __filename = fileURLToPath(import.meta.url);
@@ -96,9 +100,10 @@ const documentFields = [
  * Generate assessment from YouTube video
  */
 const generateAssessmentFromYoutube = async (req, res) => {
+    console.log("i am king of the world");
+    process.stdout.write('');
     try {
-        const { videoUrl, numberOfQuestions = 5, difficulty = 'medium', type = 'MCQ', language
-        } = await req.body;
+        const { videoUrl, numberOfQuestions = 5, difficulty = 'medium', type = 'MCQ', language } = req.body;
         
         if (!videoUrl) {
             return res.status(400).json({
@@ -107,37 +112,8 @@ const generateAssessmentFromYoutube = async (req, res) => {
             });
         }
 
-        // Extract video ID
-        const videoId = ytdl.getURLVideoID(videoUrl);
-        let transcript;
-
-        // Try Python service first
-   
-    try {
-        const response = await axios.get(`https://yt-transcript-testing.vercel.app/api/transcript/${videoId}`, { timeout: 15000 });
-        transcript = response.data.transcript;
-        transcript = transcript.map((obj) => obj.text).join('\n');
-    } catch (error) {
-        console.log('Transcript scrape service failed, falling back to product-answer');
-
-        try {
-            const pythonResponse = await axios.get(`https://transcript-scrape.vercel.app/api/getTranscript/${videoId}`, { timeout: 15000 });
-            transcript = pythonResponse.data.transcript;
-            transcript = transcript.map((obj) => obj.text).join('\n');
-        } catch (fallbackError) {
-            console.log('Both services failed:', fallbackError.message);
-        }
-    }
-
-
-
-        // If Python service failed, extract manually
-        if (!transcript) {
-            const audioPath = await fetchYouTubeAudio(videoUrl);
-            const transcriptionResult = await transcribeAudioVideo(audioPath);
-            transcript = transcriptionResult.text;
-        }
-
+        // Use the helper function to extract transcript
+        const { text: transcript, videoId } = await extractYouTubeTranscript(videoUrl);
 
         if (!transcript) {
             return res.status(400).json({
@@ -219,6 +195,7 @@ const generateAssessmentFromMediaUrl = async (req, res) => {
             numberOfQuestions = 5,
             difficulty = 'medium',
             type = 'MCQ',
+            language,
             deleteAfterProcessing = false,
             cloudinaryPublicId = null,
             resourceType = 'video'  // Default resource type for media
@@ -234,60 +211,11 @@ const generateAssessmentFromMediaUrl = async (req, res) => {
 
         console.log(`Processing media from URL: ${mediaUrl}`);
 
-        // Use Assembly AI API with the provided URL
-        const ASSEMBLY_API_KEY = process.env.ASSEMBLY_API_KEY;
-        if (!ASSEMBLY_API_KEY) {
-            clearTimeout(timeoutId);
-            throw new Error('ASSEMBLY_API_KEY is not set in environment variables');
-        }
-
-        // Submit transcription job using the URL
-        const response = await axios.post(
-            "https://api.assemblyai.com/v2/transcript",
-            {
-                audio_url: mediaUrl,
-                punctuate: true,
-                format_text: true,
-                speaker_labels: true
-            },
-            { headers: { authorization: ASSEMBLY_API_KEY } }
-        );
-
-        const transcriptId = response.data.id;
-        console.log(`Transcription job started with ID: ${transcriptId}`);
-
-        // Poll for completion
-        let isCompleted = false;
-        let transcript = '';
-
-        while (!isCompleted) {
-            const statusResponse = await axios.get(
-                `https://api.assemblyai.com/v2/transcript/${transcriptId}`,
-                { headers: { authorization: ASSEMBLY_API_KEY } }
-            );
-
-            const status = statusResponse.data.status;
-            console.log(`Transcription status: ${status}`);
-
-            if (status === "completed") {
-                isCompleted = true;
-                transcript = statusResponse.data.text;
-            } else if (status === "failed") {
-                clearTimeout(timeoutId);
-                throw new Error("Transcription failed: " + (statusResponse.data.error || "Unknown error"));
-            } else {
-                // Wait before checking again
-                await new Promise(resolve => setTimeout(resolve, 5000));
-            }
-        }
-
-        if (!transcript) {
-            clearTimeout(timeoutId);
-            throw new Error('Insufficient speech content in media');
-        }
+        // Use helper function to extract transcript
+        const { text: transcript } = await extractMediaTranscript(mediaUrl);
 
         console.log(`Generating ${numberOfQuestions} ${difficulty} ${type} questions...`);
-        const assessmentJson = await generateAssessmentPromptCall(transcript, type, numberOfQuestions, difficulty);
+        const assessmentJson = await generateAssessmentPromptCall(transcript, type, numberOfQuestions, difficulty, language);
 
         // Parse result
         let assessment;
@@ -453,82 +381,8 @@ const generateAssessmentFromDocumentUrl = async (req, res) => {
             });
         }
 
-        console.log(`Processing document from URL: ${documentUrl}`);
-
-        // Fetch the document from the URL
-        let documentBuffer;
-        try {
-            const response = await axios({
-                method: 'GET',
-                url: documentUrl,
-                responseType: 'arraybuffer'
-            });
-
-            documentBuffer = Buffer.from(response.data);
-            console.log(`Downloaded document: ${documentBuffer.length} bytes`);
-        } catch (fetchError) {
-            clearTimeout(timeoutId);
-            console.error('Error fetching document:', fetchError);
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to fetch document from URL',
-                error: fetchError.message
-            });
-        }
-
-        // Determine file type from URL
-        const urlLower = documentUrl.toLowerCase();
-        let fileType;
-        let documentText;
-        let documentMetadata = {};
-
-        // Extract text based on detected file type
-        if (urlLower.endsWith('.pdf')) {
-            console.log('Processing PDF document...');
-            fileType = 'application/pdf';
-            const pdfResult = await extractTextFromPdfFile(documentBuffer, false);
-            documentText = pdfResult.allText;
-            documentMetadata = {
-                pageCount: pdfResult.pageCount,
-                documentType: 'PDF',
-                cloudinaryUrl: documentUrl
-            };
-        }
-        else if (urlLower.endsWith('.ppt') || urlLower.endsWith('.pptx')) {
-            console.log('Processing PowerPoint document...');
-            fileType = urlLower.endsWith('.ppt') ?
-                'application/vnd.ms-powerpoint' :
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-
-            const pptResult = await extractTextFromPptFile(documentBuffer);
-            documentText = pptResult.allText;
-            documentMetadata = {
-                slideCount: pptResult.slideCount,
-                title: pptResult.title,
-                documentType: urlLower.endsWith('.ppt') ? 'PPT' : 'PPTX',
-                cloudinaryUrl: documentUrl
-            };
-        } else {
-            clearTimeout(timeoutId);
-            return res.status(400).json({
-                success: false,
-                message: 'Unsupported document type. Only PDF, PPT, and PPTX are supported.'
-            });
-        }
-
-        // Get filename from URL
-        const urlParts = documentUrl.split('/');
-        const fileName = urlParts[urlParts.length - 1].split('?')[0] || 'document';
-
-        // Validate that we have enough text to work with
-        if (!documentText || documentText.length < 100) {
-            clearTimeout(timeoutId);
-            return res.status(400).json({
-                success: false,
-                message: 'Document contains insufficient text for assessment generation',
-                error: 'The document has too little text content (minimum 100 characters required)'
-            });
-        }
+        // Use helper function to extract document text and metadata
+        const { text: documentText, metadata: documentMetadata } = await extractDocumentText(documentUrl);
 
         console.log(`Document text extracted, length: ${documentText.length} characters`);
         console.log(`Generating ${numberOfQuestions} ${difficulty} ${type} questions...`);
@@ -558,7 +412,6 @@ const generateAssessmentFromDocumentUrl = async (req, res) => {
                 assessment,
                 {
                     ...documentMetadata,
-                    fileName,
                     type,
                     difficulty,
                     transcript: JSON.stringify(documentText)
@@ -596,7 +449,7 @@ const generateAssessmentFromDocumentUrl = async (req, res) => {
         clearTimeout(timeoutId);
         res.status(200).json({
             success: true,
-            fileName,
+            fileName: documentMetadata.fileName,
             documentType: documentMetadata.documentType,
             assessment,
             metadata: {
