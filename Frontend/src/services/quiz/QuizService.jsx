@@ -41,8 +41,8 @@ const generateQuizFromMediaUrl = async (
     mediaUrl,
     numberOfQuestions = 5,
     difficulty = "medium",
-    language ,
     type = "MCQ",
+    language ,
     options = {}
 ) => {
     const { 
