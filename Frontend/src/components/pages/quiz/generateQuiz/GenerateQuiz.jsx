@@ -128,13 +128,13 @@ const GenerateQuiz = () => {
         { id: "English", name: "English" },
         { id: "Hindi", name: "Hindi" },
         { id: "Tamil", name: "Tamil" },
-        { id: "Telugu", name: "Telugu" },
-        { id: "Kannada", name: "Kannada" },
+        // { id: "Telugu", name: "Telugu" },
+        // { id: "Kannada", name: "Kannada" },
         { id: "Malayalam", name: "Malayalam" },
-        { id: "Bengali", name: "Bengali" },
-        { id: "Marathi", name: "Marathi" },
-        { id: "Gujarati", name: "Gujarati" },
-        { id: "Punjabi", name: "Punjabi" }
+        // { id: "Bengali", name: "Bengali" },
+        // { id: "Marathi", name: "Marathi" },
+        // { id: "Gujarati", name: "Gujarati" },
+        // { id: "Punjabi", name: "Punjabi" }
     ]
 
     // Event handlers

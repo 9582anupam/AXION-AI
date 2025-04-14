@@ -34,6 +34,7 @@ export const saveAssessment = async (assessmentData, sourceInfo, options = {}) =
       difficulty: sourceInfo.difficulty || 'medium',
       creator: options.userId || null,
       questions: questions,
+      assessmentLang: sourceInfo.language || 'english',
       tags: [sourceInfo.difficulty, sourceInfo.type],
       isPublic: true,
       transcript: sourceInfo.transcript

@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { ChevronRight, ChevronLeft } from "lucide-react"
@@ -23,6 +21,7 @@ const QuizAttempt = () => {
                 const response = await axios.get(`${REACT_APP_BACKEND_URL}/api/v1/assessmentFetch/${assessmentId}`, {
                     withCredentials: true
                 })
+                console.log(response)
                 setQuizData(response.data.assessment)
             } catch (error) {
                 console.error('Error fetching quiz data:', error)
@@ -194,4 +193,3 @@ const QuizAttempt = () => {
 }
 
 export default QuizAttempt
-

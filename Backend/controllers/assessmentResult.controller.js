@@ -145,6 +145,7 @@ export const getResultByUserAndAssessmentId = async (req, res) => {
       percentage: result.percentage,
       timeTaken: result.timeTaken,
       transcript: assessment.transcript,
+      language: assessment.assessmentLang,
       questions: result.answers.map(answer => {
         const question = assessment.questions.find(q => q.id === answer.questionId);
         return {

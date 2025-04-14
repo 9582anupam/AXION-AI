@@ -68,6 +68,11 @@ const assessmentSchema = new mongoose.Schema({
         enum: ["easy", "medium", "hard"],
         default: "medium"
     },
+    assessmentLang: {
+        type: String,
+        default: "english",
+        trim: true
+    },
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
