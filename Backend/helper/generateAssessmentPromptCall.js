@@ -75,8 +75,9 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
 
                 ${getQuestionFormatInstructions(type)}
 
-                Format your response as a structured JSON array without any additional explanation. Each question should have the following structure:
-                ${jsonStructure}
+                Format your response as a structured JSON array without any additional explanation. json should include of length of 2 like this  arr[0] is for all question object and arr[1] is for metadata object. Each question should have the following structure:
+                ${jsonStructure} and metedata include title, description, array of tags , array of category of the assessment/content.
+
 
                 Ensure questions are directly relevant to the content, varied in topic coverage, and appropriate for ${difficulty} difficulty level.
                 Generate the assessment in ${language} only, regardless of the language of the reference content.
@@ -84,7 +85,8 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
         }
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
+        const response =  result.response;
+        // console.log(response.text());
         return response.text();
     } catch (error) {
         console.error('Error generating assessment:', error);
