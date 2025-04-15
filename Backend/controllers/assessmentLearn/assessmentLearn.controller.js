@@ -49,17 +49,27 @@ const generateNotes = async (req, res) => {
         if (!learnMaterialDb) {
             return res.status(404).json({ message: "Learn material not found" });
         }
-        const content = learnMaterialDb.transcript;
 
+        // Check if notes already exist
+        if (learnMaterialDb.notes) {
+            console.log("Notes already exist, returning existing notes");
+            return res.status(200).json({
+                message: "Notes already exist",
+                data: learnMaterialDb.notes,
+                status: 200,
+                success: true,
+            });
+        }
+
+        // Notes don't exist, generate them
+        const content = learnMaterialDb.transcript;
         const notes = await generateNotesHelper(content);
         if (!notes) {
             return res.status(500).json({ message: "Failed to generate notes" });
         }
 
-        // Send the generated notes as a response
+        // Save the generated notes
         console.log("Notes generated successfully:", notes);
-
-        // Update existing document instead of creating a new one
         await Learn.findByIdAndUpdate(learnId, { notes });
 
         res.status(200).json({
@@ -83,17 +93,27 @@ const generateSummary = async (req, res) => {
         if (!learnMaterialDb) {
             return res.status(404).json({ message: "Learn material not found" });
         }
-        const content = learnMaterialDb.transcript;
 
+        // Check if summary already exists
+        if (learnMaterialDb.summary) {
+            console.log("Summary already exists, returning existing summary");
+            return res.status(200).json({
+                message: "Summary already exists",
+                data: learnMaterialDb.summary,
+                status: 200,
+                success: true,
+            });
+        }
+
+        // Summary doesn't exist, generate it
+        const content = learnMaterialDb.transcript;
         const summary = await generateSummaryHelper(content);
         if (!summary) {
             return res.status(500).json({ message: "Failed to generate summary" });
         }
 
-        // Send the generated summary as a response
+        // Save the generated summary
         console.log("Summary generated successfully:", summary);
-
-        // Update existing document instead of creating a new one
         await Learn.findByIdAndUpdate(learnId, { summary });
 
         res.status(200).json({
@@ -117,9 +137,21 @@ const generateFlashcards = async (req, res) => {
         if (!learnMaterialDb) {
             return res.status(404).json({ message: "Learn material not found" });
         }
-        const content = learnMaterialDb.transcript;
 
+        // Check if flashcards already exist
+        if (learnMaterialDb.flashCards && learnMaterialDb.flashCards.length > 0) {
+            console.log("Flash Cards already exist, returning existing cards");
+            return res.status(200).json({
+                message: "Flash Cards already exist",
+                data: learnMaterialDb.flashCards,
+                status: 200,
+                success: true,
+            });
+        }
+
+        // Flashcards don't exist, generate them
         try {
+            const content = learnMaterialDb.transcript;
             const flashCards = await generateFlashCardsHelper(content);
             if (!flashCards || !Array.isArray(flashCards)) {
                 return res.status(500).json({ 
@@ -128,10 +160,8 @@ const generateFlashcards = async (req, res) => {
                 });
             }
 
-            // Send the generated Flash Cards as a response
+            // Save the generated flashcards
             console.log("Flash Cards generated successfully:", flashCards);
-
-            // Update existing document instead of creating a new one
             await Learn.findByIdAndUpdate(learnId, { flashCards });
 
             res.status(200).json({
