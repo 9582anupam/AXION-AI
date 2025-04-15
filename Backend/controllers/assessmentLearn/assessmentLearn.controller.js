@@ -210,5 +210,24 @@ const askContent = async (req, res) => {
 };
 
 
+const getLearn = async (req, res) => {
+    try {
+        const learnId = req.params.learnId;
+        const learnMaterialDb = await Learn.findById(learnId);
+        if (!learnMaterialDb) {
+            return res.status(404).json({ message: "Learn material not found" });
+        }
+        res.status(200).json({
+            message: "Learn material fetched successfully",
+            data: learnMaterialDb,
+            status: 200,
+            success: true,
+        });
+    } catch (error) {
+        console.error("Error fetching learn material:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
 
-export { uploadLearn, generateNotes, generateSummary, generateFlashcards, askContent };
+
+export { uploadLearn, generateNotes, generateSummary, generateFlashcards, askContent, getLearn };

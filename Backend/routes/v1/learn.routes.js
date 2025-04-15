@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadLearn, generateNotes, generateSummary, generateFlashcards, askContent } from "../../controllers/assessmentLearn/assessmentLearn.js";
+import { uploadLearn, generateNotes, generateSummary, generateFlashcards, askContent, getLearn } from "../../controllers/assessmentLearn/assessmentLearn.controller.js";
 import { verifyJWT } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -18,6 +18,9 @@ router.post("/generateFlashcards", verifyJWT, generateFlashcards);
 
 // talk to the content
 router.post("/ask", verifyJWT, askContent);
+
+// get the learn material by id
+router.get("/:learnId", verifyJWT, getLearn);
 
 
 
