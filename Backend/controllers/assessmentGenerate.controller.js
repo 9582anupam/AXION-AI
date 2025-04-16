@@ -241,6 +241,7 @@ const generateAssessmentFromMediaUrl = async (req, res) => {
                     fileName,
                     type,
                     difficulty,
+                    language,
                     source: 'media-url',
                     transcript: JSON.stringify(transcript)
                 },
@@ -414,6 +415,7 @@ const generateAssessmentFromDocumentUrl = async (req, res) => {
                     ...documentMetadata,
                     type,
                     difficulty,
+                    language,
                     transcript: JSON.stringify(documentText)
                 },
                 {

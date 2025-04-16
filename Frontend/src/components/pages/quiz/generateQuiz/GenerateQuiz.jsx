@@ -79,6 +79,7 @@ const GenerateQuiz = () => {
     const [showOptionsStep, setShowOptionsStep] = useState(false);
     const [assessmentAction, setAssessmentAction] = useState(null);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isLearning, setIsLearning] = useState(false);
 
 
     console.log(selectedInput);
@@ -334,6 +335,7 @@ const GenerateQuiz = () => {
 
 
         if (assessmentAction === "learn") {
+            setIsLearning(true);
             // by deault i am taking to learn page  if nothing match
             if ((selectedInput.id === 'mp3-local' || selectedInput.id === 'mp4-local' || selectedInput.id === 'document')) {
                 try {
@@ -516,7 +518,7 @@ const GenerateQuiz = () => {
     return (
         <section className="py-16 bg-slate-900 -mt-2 min-h-screen">
             {/* Loading overlay */}
-            <LoadingOverlay loading={loading} isDownloading={isDownloading} />
+            <LoadingOverlay loading={loading} isDownloading={isDownloading} isLearning={isLearning}/>
 
             <div className="container mx-auto px-6 -mt-12">
                 <div className="text-center mb-12">
@@ -584,11 +586,11 @@ const GenerateQuiz = () => {
                         )}
 
                         {/* Step 2: Assessment Options */}
-                        {showOptionsStep && (
+                        {showOptionsStep  && (
                             <>
                                 {/* Action Selection Options */}
                                 {!assessmentAction ? (
-                                    <ActionSelector inputType={selectedInput.id} url={inputValue} onActionSelect={handleActionSelect} />
+                                    <ActionSelector  inputType={selectedInput.id} url={inputValue} onActionSelect={handleActionSelect} />
                                 ) : (
                                     <>
                                         {/* Show configuration options only for "take" option */}
@@ -628,7 +630,7 @@ const GenerateQuiz = () => {
                                                 onClick={handleSubmit}
                                                 disabled={loading}
                                             >
-                                                {loading ? "Generating..." : assessmentAction === "download" ? "Download Assessment" : "Take Assessment"}
+                                                {loading ? "Generating..." : assessmentAction === "download" ? "Download Assessment" : assessmentAction === "take" ? "Take Assessment" :  "Start Learning"}
                                             </button>
                                         </div>
                                     </>

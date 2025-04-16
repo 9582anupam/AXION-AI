@@ -1,4 +1,3 @@
-import axios from "axios";
 import userAuthenticatedAxiosInstance from "../users/userAuthenticatedAxiosInstance";
 
 const userAxiosInstance = userAuthenticatedAxiosInstance(
@@ -19,3 +18,20 @@ console.log(title, url , contentType)
     console.log(error)
  }
 }
+
+export const getSummary = async (learnId) => {
+
+}
+
+export const getFlashes = async(learnId) => {
+
+}
+
+export const getNotes =  async(learnId) => {
+
+} 
+
+export const ask = async(learnId) => {
+
+}
+
