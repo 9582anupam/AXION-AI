@@ -1,10 +1,58 @@
 import { FileText, Download, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { fetchLearnData } from "../../../../../services/learn/learnService";
+import LoadingOverlay from "./LoadingOverlay";
 
-const ActionSelector = ({ inputType, url, onActionSelect }) => {
+const ActionSelector = ({ inputType, url, onActionSelect, file, cloudinaryUrl, cloudinaryData }) => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  
   const getYouTubeVideoId = (url) => {
     const regex = /(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|embed|shorts|watch)\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const match = url.match(regex);
     return match ? match[1] : null;
+  };
+
+  const handleLearnClick = async () => {
+    setIsLoading(true);
+    try {
+      if ((inputType === 'mp3-local' || inputType === 'mp4-local' || inputType === 'document') && file) {
+        // Handle file upload for learning
+        const { uploadToCloudinary, getResourceType } = await import('../../../../../utils/cloudinaryUtils');
+        
+        // Upload to Cloudinary with appropriate resource type
+        const resourceType = getResourceType(file);
+        const cloudinaryResult = await uploadToCloudinary(file, {
+          folder: 'assessments/media',
+          resourceType
+        });
+
+        if (cloudinaryResult.url) {
+          // Fetch learnID and other Metadata
+          const LearnResponse = await fetchLearnData(
+            cloudinaryResult.original_filename, 
+            cloudinaryResult.url, 
+            (inputType === 'mp3-local' || inputType === 'mp4-local' ? 'video' : inputType)
+          );
+          navigate(`/attemptquiz/learn/${LearnResponse.data._id}`);
+        }
+      } else if (url) {
+        // Handle URL-based inputs
+        const title = url.split('/');
+        const LearnResponse = await fetchLearnData(
+          title[title.length - 1], 
+          url, 
+          inputType === 'mp3-url' ? 'audio' : inputType === 'mp4-url' ? 'video' : inputType
+        );
+        navigate(`/attemptquiz/learn/${LearnResponse.data._id}`);
+      }
+    } catch (error) {
+      console.error("Error during learn processing:", error);
+      // You may want to add error handling UI here
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const videoId = getYouTubeVideoId(url);
@@ -12,6 +60,8 @@ const ActionSelector = ({ inputType, url, onActionSelect }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      {isLoading && <LoadingOverlay loading={isLoading} isLearning={true} />}
+      
       <h3 className="text-xl font-semibold text-white col-span-full text-center mb-2">
         What would you like to do with this content?
       </h3>
@@ -31,12 +81,11 @@ const ActionSelector = ({ inputType, url, onActionSelect }) => {
           ></iframe>
         </div>
       )}
+
       {/* Learn Option */}
-
-
       <div
         className="bg-slate-900 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-800/50 rounded-xl p-6 text-center cursor-pointer transition-all shadow-md"
-        onClick={() => onActionSelect("learn")}
+        onClick={handleLearnClick}
       >
         <div className="bg-gradient-to-br from-cyan-500 to-indigo-600 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-5">
           <FileText className="h-10 w-10 text-white" />
@@ -74,9 +123,6 @@ const ActionSelector = ({ inputType, url, onActionSelect }) => {
           </span>
         </div>
       </div>
-
-
-
 
       {/* Download Assessment Option */}
       <div

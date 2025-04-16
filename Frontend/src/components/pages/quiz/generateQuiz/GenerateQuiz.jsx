@@ -19,7 +19,6 @@ import DownloadInfo from './components/DownloadInfo';
 import ErrorMessage from './components/ErrorMessage';
 import LoadingOverlay from './components/LoadingOverlay';
 import { FileText, Youtube, Video, Music } from "lucide-react";
-import axios from "axios";
 import { fetchLearnData } from "../../../../services/learn/learnService";
 
 
@@ -590,7 +589,14 @@ const GenerateQuiz = () => {
                             <>
                                 {/* Action Selection Options */}
                                 {!assessmentAction ? (
-                                    <ActionSelector  inputType={selectedInput.id} url={inputValue} onActionSelect={handleActionSelect} />
+                                    <ActionSelector  
+                                        inputType={selectedInput.id} 
+                                        url={inputValue} 
+                                        onActionSelect={handleActionSelect}
+                                        file={file}
+                                        cloudinaryUrl={cloudinaryUrl}
+                                        cloudinaryData={cloudinaryData}
+                                    />
                                 ) : (
                                     <>
                                         {/* Show configuration options only for "take" option */}
