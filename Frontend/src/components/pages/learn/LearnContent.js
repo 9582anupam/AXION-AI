@@ -1,25 +1,44 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { getNotes, getSummary, getFlashes, ask } from "../../../services/learn/learnService";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm';
 
 export const LearnContent = () => {
-  const { learnId, inputType,} = useParams();
+  const { learnId, inputType } = useParams();
+  const location = useLocation();
+  const contentUrl = location.state?.contentUrl;
 
-  console.log(learnId, inputType )
   const [summary, setSummary] = useState(null);
   const [flashes, setFlashes] = useState([]);
   const [notes, setNotes] = useState(null);
-  const [originalContent, setOriginalContent] = useState(null);
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("summary");
   const [flashIndex, setFlashIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   
+  // Determine content type for iframe
+  const getContentType = () => {
+    if (inputType === "youtube") {
+      // Extract video ID for YouTube
+      const videoId = contentUrl?.match(/(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|embed|shorts|watch)\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+      return {
+        type: "youtube",
+        url: videoId ? `https://www.youtube.com/embed/${videoId}` : null
+      };
+    } else if (inputType === "mp4-url" || inputType === "mp4-local") {
+      return { type: "video", url: contentUrl };
+    } else if (inputType === "mp3-url" || inputType === "mp3-local") {
+      return { type: "audio", url: contentUrl };
+    } else if (inputType === "document") {
+      return { type: "document", url: contentUrl };
+    }
+    return { type: "unknown", url: contentUrl };
+  };
+
+  const contentTypeInfo = getContentType();
 
   useEffect(() => {
     const fetchLearnData = async () => {
@@ -33,7 +52,6 @@ export const LearnContent = () => {
         setSummary(summaryResponse.data);
         setFlashes(flashesResponse.data);
         setNotes(notesResponse.data);
-        setOriginalContent(summaryResponse.originalContent || "Original content not available");
       } catch (error) {
         console.error("Error fetching learn data:", error);
       }
@@ -45,34 +63,19 @@ export const LearnContent = () => {
   const handleAskQuestion = async () => {
     if (!question.trim()) return;
     
-    // Create new message with user question
     const userMessage = { role: 'user', content: question };
-    
-    // Add user message to chat history
     setChatHistory(prev => [...prev, userMessage]);
     
-    // Clear input field and set loading state
     setQuestion("");
     setLoading(true);
     
     try {
-      // Prepare messages in the format expected by the API
-      const newMessages = [userMessage]; // Current question
-      
-      // Call API with current chat history as oldMessages and new question as newMessages
+      const newMessages = [userMessage];
       const response = await ask(learnId, newMessages, chatHistory);
-      console.log(response)
       
-      // Create bot message from response
       const botMessage = { role: 'assistant', content: response.data };
-      
-      // Update chat history with bot response
       setChatHistory(prev => [...prev, botMessage]);
-      
-      // Store latest answer separately if needed elsewhere
-      setAnswer(response.answer);
     } catch (error) {
-      // Handle error with a message in the chat
       const errorMessage = { role: 'assistant', content: "Sorry, I couldn't process your request. Please try again." };
       setChatHistory(prev => [...prev, errorMessage]);
       console.error("Error asking question:", error);
@@ -85,7 +88,7 @@ export const LearnContent = () => {
     setIsFlipped(false);
     setTimeout(() => {
       setFlashIndex(prev => Math.min(flashes.length - 1, prev + 1));
-    }, 150); // Small delay to allow flip animation to complete
+    }, 150);
   };
 
   const handlePrevCard = () => {
@@ -106,235 +109,450 @@ export const LearnContent = () => {
     }
   };
 
-  const TabButton = ({ id, label, isActive }) => (
-    <button
-      onClick={() => setActiveTab(id)}
-      className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${
-        isActive 
-          ? "bg-slate-800 text-white border-b-2 border-cyan-500" 
-          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-      }`}
-    >
-      {label}
-    </button>
-  );
+  // Render content based on type
+  const renderContent = () => {
+    if (!contentUrl) {
+      return (
+        <div className="flex items-center justify-center h-full bg-slate-800 rounded-lg">
+          <p className="text-slate-400">Content unavailable</p>
+        </div>
+      );
+    }
+
+    switch(contentTypeInfo.type) {
+      case "youtube":
+        return (
+          <iframe 
+            src={contentTypeInfo.url} 
+            className="w-full h-full rounded-lg"
+            title="YouTube video player" 
+            allowFullScreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          ></iframe>
+        );
+      case "video":
+        return (
+          <video 
+            src={contentTypeInfo.url} 
+            className="w-full h-full rounded-lg" 
+            controls
+            controlsList="nodownload"
+          ></video>
+        );
+      case "audio":
+        return (
+          <div className="flex flex-col items-center justify-center h-full bg-gradient-to-b from-slate-800 to-slate-900 rounded-lg p-6">
+            <div className="w-40 h-40 rounded-full bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center mb-8 shadow-lg shadow-cyan-900/30">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+              </svg>
+            </div>
+            <audio 
+              src={contentTypeInfo.url} 
+              className="w-full" 
+              controls 
+              controlsList="nodownload"
+            ></audio>
+          </div>
+        );
+      case "document":
+        if (contentTypeInfo.url?.toLowerCase().endsWith('.pdf')) {
+          return (
+            <iframe 
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(contentTypeInfo.url)}&embedded=true`}
+              className="w-full h-full rounded-lg"
+              title="Document Viewer"
+            ></iframe>
+          );
+        } else {
+          return (
+            <div className="flex items-center justify-center h-full bg-slate-800 rounded-lg">
+              <p className="text-slate-400">Document preview not available</p>
+            </div>
+          );
+        }
+      default:
+        return (
+          <div className="flex items-center justify-center h-full bg-slate-800 rounded-lg">
+            <p className="text-slate-400">Content preview not available</p>
+          </div>
+        );
+    }
+  };
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-800 transition-all duration-300 hover:shadow-cyan-900/20">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-6 border-b border-slate-700 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-indigo-600/10 opacity-50"></div>
-            <div className="relative">
-              <h2 className="text-3xl font-bold text-slate-100 mb-1">Learn Content</h2>
-              <p className="text-slate-400 text-sm">Explore your content with AI-generated insights.</p>
-            </div>
+    <div className="min-h-screen bg-slate-900 py-6">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-white">
+            Interactive Learning
+            <span className="ml-2 bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
+              Experience
+            </span>
+          </h1>
+          <p className="text-slate-400">Explore your content with AI-powered insights and interactive tools</p>
+        </div>
+
+        {/* Main content area with two columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-150px)]">
+          {/* Left column - Content display */}
+          <div className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 shadow-xl shadow-black/20 h-full">
+            {renderContent()}
           </div>
 
-          {/* Two Column Layout */}
-          <div className="flex flex-col md:flex-row">
-            {/* Left Column - Original Content */}
-            <div className="md:w-1/2 p-6 border-r border-slate-700">
-              <h3 className="text-xl font-semibold text-slate-100 mb-4">Original Content</h3>
-              <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700 h-[calc(100vh-250px)] overflow-y-auto">
-                <div className="prose prose-invert prose-sm max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {originalContent || "Loading original content..."}
-                  </ReactMarkdown>
-                </div>
+          {/* Right column - Interactive tools */}
+          <div className="bg-slate-850 rounded-2xl overflow-hidden border border-slate-700 shadow-xl flex flex-col h-full">
+            {/* Tab navigation - Reordered tabs */}
+            <div className="bg-slate-800/50 border-b border-slate-700">
+              <div className="flex overflow-x-auto p-2 space-x-2">
+                {/* Chat tab (first) */}
+                <button
+                  onClick={() => setActiveTab("askQuestion")}
+                  className={`flex items-center px-4 py-2 rounded-lg ${
+                    activeTab === "askQuestion" 
+                      ? "bg-cyan-600/20 text-cyan-400 font-medium" 
+                      : "text-slate-400 hover:bg-slate-700/40 hover:text-slate-200"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  Ask AI
+                </button>
+
+                {/* Notes tab (second) */}
+                <button
+                  onClick={() => setActiveTab("notes")}
+                  className={`flex items-center px-4 py-2 rounded-lg ${
+                    activeTab === "notes" 
+                      ? "bg-cyan-600/20 text-cyan-400 font-medium" 
+                      : "text-slate-400 hover:bg-slate-700/40 hover:text-slate-200"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Notes
+                </button>
+
+                {/* Flashcards tab (third) */}
+                <button
+                  onClick={() => setActiveTab("flashcards")}
+                  className={`flex items-center px-4 py-2 rounded-lg ${
+                    activeTab === "flashcards" 
+                      ? "bg-cyan-600/20 text-cyan-400 font-medium" 
+                      : "text-slate-400 hover:bg-slate-700/40 hover:text-slate-200"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  Flashcards
+                </button>
+
+                {/* Summary tab (fourth) */}
+                <button
+                  onClick={() => setActiveTab("summary")}
+                  className={`flex items-center px-4 py-2 rounded-lg ${
+                    activeTab === "summary" 
+                      ? "bg-cyan-600/20 text-cyan-400 font-medium" 
+                      : "text-slate-400 hover:bg-slate-700/40 hover:text-slate-200"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Summary
+                </button>
               </div>
             </div>
 
-            {/* Right Column - Tabbed Interface */}
-            <div className="md:w-1/2 p-6">
-              {/* Tab Navigation */}
-              <div className="flex border-b border-slate-700 mb-4 overflow-x-auto">
-                <TabButton id="summary" label="Summary" isActive={activeTab === "summary"} />
-                <TabButton id="flashcards" label="Flashcards" isActive={activeTab === "flashcards"} />
-                <TabButton id="notes" label="Notes" isActive={activeTab === "notes"} />
-                <TabButton id="askQuestion" label="Ask Question" isActive={activeTab === "askQuestion"} />
-              </div>
-
-              {/* Tab Panels */}
-              <div className="h-[calc(100vh-250px)] overflow-y-auto">
-                {/* Summary Tab */}
-                {activeTab === "summary" && (
-                  <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-                    <h3 className="text-xl font-semibold text-slate-100 mb-4">Summary</h3>
-                    <p className="text-slate-300 text-sm leading-relaxed">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {summary}
-                          </ReactMarkdown>
-                    </p>
-                  </div>
-                )}
-
-                {/* Flashcards Tab */}
-                {activeTab === "flashcards" && (
-                  <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-                    <h3 className="text-xl font-semibold text-slate-100 mb-4">Flashcards</h3>
-                    
-                    {flashes.length > 0 ? (
-                      <div className="space-y-6">
-                        {/* Card counter */}
-                        <div className="text-center text-slate-400 text-sm">
-                          Card {flashIndex + 1} of {flashes.length}
-                        </div>
-                        
-                        {/* Flipable Flashcard - Fixed Implementation */}
-                        <div className="relative h-64 w-full" style={{ perspective: "1000px" }}>
-                          <div 
-                            className={`absolute w-full h-full transition-all duration-500 ease-in-out cursor-pointer`}
-                            onClick={flipCard}
-                            style={{ 
-                              transformStyle: "preserve-3d",
-                              transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
-                            }}
-                          >
-                            {/* Front side (Question) */}
-                            <div 
-                              className="absolute w-full h-full bg-slate-700/50 p-5 rounded-lg border border-slate-600 flex flex-col justify-center"
-                              style={{ backfaceVisibility: "hidden" }}
-                            >
-                              <span className="text-cyan-400 font-medium mb-2">Question:</span>
-                              <p className="text-slate-200">{flashes[flashIndex].question}</p>
-                              <div className="text-slate-400 text-xs mt-4 text-center absolute bottom-2 w-full left-0">
-                                Click to reveal answer
-                              </div>
-                            </div>
-                            
-                            {/* Back side (Answer) */}
-                            <div 
-                              className="absolute w-full h-full bg-slate-700/70 p-5 rounded-lg border border-cyan-600/30 flex flex-col justify-center"
-                              style={{ 
-                                backfaceVisibility: "hidden",
-                                transform: "rotateY(180deg)"
-                              }}
-                            >
-                              <span className="text-cyan-400 font-medium mb-2">Answer:</span>
-                              <p className="text-slate-200">{flashes[flashIndex].answer}</p>
-                              <div className="text-slate-400 text-xs mt-4 text-center absolute bottom-2 w-full left-0">
-                                Click to see question
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Navigation buttons */}
-                        <div className="flex justify-between mt-4">
-                          <button 
-                            onClick={handlePrevCard}
-                            disabled={flashIndex === 0}
-                            className="bg-slate-700 text-slate-200 px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-slate-600 transition-colors"
-                          >
-                            Previous
-                          </button>
-                          <button 
-                            onClick={handleNextCard}
-                            disabled={flashIndex === flashes.length - 1}
-                            className="bg-slate-700 text-slate-200 px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-slate-600 transition-colors"
-                          >
-                            Next
-                          </button>
-                        </div>
-                      </div>
+            {/* Tab content area */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Summary Tab */}
+              {activeTab === "summary" && (
+                <div className="bg-gradient-to-r from-slate-800 to-slate-800/30 rounded-xl p-6 border border-slate-700/50 shadow-lg">
+                  <h2 className="text-xl font-semibold text-cyan-400 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    Key Points Summary
+                  </h2>
+                  <div className="prose prose-invert prose-cyan prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-cyan-300 max-w-none">
+                    {summary ? (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {summary}
+                      </ReactMarkdown>
                     ) : (
-                      <p className="text-slate-300 text-center py-8">Loading flashcards...</p>
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-slate-700 rounded w-3/4 mb-4"></div>
+                        <div className="h-4 bg-slate-700 rounded w-full mb-4"></div>
+                        <div className="h-4 bg-slate-700 rounded w-5/6 mb-4"></div>
+                        <div className="h-4 bg-slate-700 rounded w-4/5"></div>
+                      </div>
                     )}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Notes Tab */}
-                {activeTab === "notes" && (
-                  <div className="rounded-xl p-6 border border-slate-700">
-                    <h3 className="text-xl font-semibold text-slate-100 mb-4">Notes</h3>
-                    <div className="text-slate-300 text-sm leading-relaxed">
-                      <div className="prose max-w-full prose-invert">
-                        <div className="overflow-x-auto">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {notes}
-                          </ReactMarkdown>
+              {/* Flashcards Tab - Fixed flip animation */}
+              {activeTab === "flashcards" && (
+                <div className="bg-gradient-to-b from-slate-800 to-slate-800/30 rounded-xl p-6 border border-slate-700/50 shadow-lg">
+                  <h2 className="text-xl font-semibold text-cyan-400 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                    </svg>
+                    Learning Flashcards
+                  </h2>
+                  
+                  {flashes.length > 0 ? (
+                    <div className="space-y-6">
+                      {/* Card progress indicator */}
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm text-slate-400">Card {flashIndex + 1} of {flashes.length}</div>
+                        <div className="flex space-x-1">
+                          {flashes.map((_, idx) => (
+                            <div 
+                              key={idx} 
+                              className={`w-2.5 h-2.5 rounded-full ${idx === flashIndex ? 'bg-cyan-500' : 'bg-slate-700'}`}
+                              onClick={() => {
+                                setIsFlipped(false);
+                                setTimeout(() => setFlashIndex(idx), 150);
+                              }}
+                            ></div>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Ask Question Tab */}
-                {activeTab === "askQuestion" && (
-                  <div className="flex flex-col h-full">
-                    <div className="flex-1 overflow-y-auto mb-4">
-                      <div className="space-y-4">
-                        {chatHistory.length > 0 ? (
-                          chatHistory.map((message, index) => (
-                            <div 
-                              key={index} 
-                              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                            >
-                              <div 
-                                className={`max-w-[80%] rounded-lg p-3 ${
-                                  message.sender === 'user' 
-                                    ? 'bg-cyan-600/30 text-slate-100' 
-                                    : 'bg-slate-700/50 text-slate-200'
-                                }`}
-                              >
-                                <p className="text-sm">{message.content}</p>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="h-full flex items-center justify-center">
-                            <div className="text-center p-6 text-slate-400">
-                              <p>Ask questions about this content and get AI-powered answers.</p>
-                              <p className="mt-2 text-xs">Try questions like:</p>
-                              <ul className="text-xs mt-1 space-y-1">
-                                <li>"Can you summarize the key points?"</li>
-                                <li>"Explain this concept in simpler terms"</li>
-                                <li>"What are the main arguments presented?"</li>
-                              </ul>
-                            </div>
-                          </div>
-                        )}
-                        {loading && (
-                          <div className="flex justify-start">
-                            <div className="bg-slate-700/50 text-slate-200 rounded-lg p-3 max-w-[80%]">
-                              <div className="flex space-x-2">
-                                <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce"></div>
-                                <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="border-t border-slate-700 pt-4">
-                      <div className="relative">
-                        <textarea
-                          className="w-full bg-slate-700/50 text-slate-200 p-3 rounded-lg border border-slate-600 focus:border-cyan-500 focus:outline-none pr-12"
-                          rows={3}
-                          placeholder="Type your question here..."
-                          value={question}
-                          onChange={(e) => setQuestion(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          disabled={loading}
-                        ></textarea>
-                        <button
-                          onClick={handleAskQuestion}
-                          disabled={loading || !question.trim()}
-                          className="absolute right-2 bottom-2 bg-cyan-600 text-white p-1 rounded-md disabled:opacity-50 hover:bg-cyan-500 transition-colors"
+                      
+                      {/* Fixed card with proper 3D flip animation using inline styles */}
+                      <div className="relative h-64 w-full" style={{ perspective: "1000px" }}>
+                        <div 
+                          className="absolute w-full h-full transition-all duration-500 cursor-pointer"
+                          onClick={flipCard}
+                          style={{ 
+                            transformStyle: "preserve-3d",
+                            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
+                          }}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                          {/* Card front */}
+                          <div 
+                            className="absolute w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-xl border border-slate-600 flex flex-col justify-center"
+                            style={{ backfaceVisibility: "hidden" }}
+                          >
+                            <span className="text-cyan-400 text-sm font-medium mb-3">Question:</span>
+                            <p className="text-slate-200 text-lg">{flashes[flashIndex]?.question}</p>
+                            <div className="text-slate-400 text-xs mt-4 absolute bottom-4 left-0 w-full text-center">
+                              Click to flip card
+                            </div>
+                          </div>
+                          
+                          {/* Card back */}
+                          <div 
+                            className="absolute w-full h-full bg-gradient-to-br from-slate-800 to-slate-700 p-6 rounded-xl border border-cyan-800/30 flex flex-col justify-center"
+                            style={{ 
+                              backfaceVisibility: "hidden",
+                              transform: "rotateY(180deg)"
+                            }}
+                          >
+                            <span className="text-cyan-400 text-sm font-medium mb-3">Answer:</span>
+                            <p className="text-slate-200 text-lg">{flashes[flashIndex]?.answer}</p>
+                            <div className="text-slate-400 text-xs mt-4 absolute bottom-4 left-0 w-full text-center">
+                              Click to flip back
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Navigation buttons */}
+                      <div className="flex justify-center space-x-4 mt-6">
+                        <button 
+                          onClick={handlePrevCard}
+                          disabled={flashIndex === 0}
+                          className={`px-4 py-2 rounded-lg flex items-center ${
+                            flashIndex === 0 
+                              ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed' 
+                              : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                          } transition-colors`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Previous
+                        </button>
+                        <button 
+                          onClick={handleNextCard}
+                          disabled={flashIndex === flashes.length - 1}
+                          className={`px-4 py-2 rounded-lg flex items-center ${
+                            flashIndex === flashes.length - 1 
+                              ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed' 
+                              : 'bg-cyan-600 text-white hover:bg-cyan-500'
+                          } transition-colors`}
+                        >
+                          Next
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                           </svg>
                         </button>
                       </div>
                     </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-48 bg-slate-800/50 rounded-lg border border-slate-700">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500 mx-auto"></div>
+                        <p className="mt-4 text-slate-400">Loading flashcards...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Notes Tab */}
+              {activeTab === "notes" && (
+                <div className="bg-gradient-to-r from-slate-800 to-slate-800/30 rounded-xl p-6 border border-slate-700/50 shadow-lg">
+                  <h2 className="text-xl font-semibold text-cyan-400 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                      <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
+                    </svg>
+                    Study Notes
+                  </h2>
+                  <div className="prose prose-invert prose-cyan prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-cyan-300 max-w-none">
+                    {notes ? (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {notes}
+                      </ReactMarkdown>
+                    ) : (
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-slate-700 rounded w-2/3 mb-4"></div>
+                        <div className="h-4 bg-slate-700 rounded w-full mb-4"></div>
+                        <div className="h-4 bg-slate-700 rounded w-5/6 mb-4"></div>
+                        <div className="h-4 bg-slate-700 rounded w-4/5"></div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+
+              {/* Ask Question Tab */}
+              {activeTab === "askQuestion" && (
+                <div className="flex flex-col h-full -mt-6 -mx-6">
+                  <div className="px-6 py-4 bg-slate-800/50 border-b border-slate-700">
+                    <h2 className="text-xl font-semibold text-cyan-400 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                      </svg>
+                      AI Assistant
+                    </h2>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                    {chatHistory.length > 0 ? (
+                      chatHistory.map((message, index) => (
+                        <div 
+                          key={index} 
+                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div 
+                            className={`max-w-[80%] rounded-2xl p-4 ${
+                              message.role === 'user' 
+                                ? 'bg-cyan-600 text-white' 
+                                : 'bg-slate-800 text-slate-200 border border-slate-700'
+                            }`}
+                          >
+                            {message.role === 'assistant' && (
+                              <div className="flex items-center mb-2">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center mr-2">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                                  </svg>
+                                </div>
+                                <span className="text-xs font-medium text-cyan-400">AI Assistant</span>
+                              </div>
+                            )}
+                            <div className="prose prose-sm prose-invert max-w-none">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {message.content}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <div className="text-center px-6 py-8 rounded-xl bg-slate-800/50 border border-slate-700/50 max-w-md">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-indigo-600 mx-auto mb-4 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-medium text-white mb-2">Ask anything about this content</h3>
+                          <p className="text-slate-400 mb-4">Get explanations, summaries, or dive deeper into specific topics.</p>
+                          <div className="text-left space-y-2">
+                            <div className="bg-slate-700/50 text-slate-300 px-3 py-2 rounded-lg text-sm">
+                              "Can you explain the key concepts in simpler terms?"
+                            </div>
+                            <div className="bg-slate-700/50 text-slate-300 px-3 py-2 rounded-lg text-sm">
+                              "What are the most important points to remember?"
+                            </div>
+                            <div className="bg-slate-700/50 text-slate-300 px-3 py-2 rounded-lg text-sm">
+                              "How does this relate to [specific topic]?"
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {loading && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[80%] bg-slate-800 text-slate-200 rounded-2xl p-4 border border-slate-700">
+                          <div className="flex items-center">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center mr-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                              </svg>
+                            </div>
+                            <span className="text-xs font-medium text-cyan-400">AI Assistant</span>
+                          </div>
+                          <div className="mt-2 flex space-x-1">
+                            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce"></div>
+                            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="px-6 py-4 bg-slate-800/30 border-t border-slate-700">
+                    <div className="relative">
+                      <textarea
+                        className="w-full bg-slate-800 text-slate-200 p-4 pr-14 rounded-xl border border-slate-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 focus:outline-none placeholder-slate-500 resize-none"
+                        rows={3}
+                        placeholder="Ask a question about this content..."
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={loading}
+                      ></textarea>
+                      <button
+                        onClick={handleAskQuestion}
+                        disabled={loading || !question.trim()}
+                        className={`absolute right-3 bottom-3 p-2 rounded-lg transition-colors ${
+                          loading || !question.trim() 
+                            ? 'bg-slate-700 text-slate-500 cursor-not-allowed' 
+                            : 'bg-cyan-600 text-white hover:bg-cyan-500'
+                        }`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
