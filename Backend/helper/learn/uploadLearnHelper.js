@@ -13,8 +13,7 @@ const uploadLearnHelper = async ({title, cloudinaryContentUrl, contentType}) => 
                 case 'youtube':
                     transcript = await extractYouTubeTranscript(cloudinaryContentUrl);
                     break;
-                case 'video':
-                case 'audio':
+                case 'audio' || 'video':
                     transcript = await extractMediaTranscript(cloudinaryContentUrl, contentType);
                     break;
                 case 'document':

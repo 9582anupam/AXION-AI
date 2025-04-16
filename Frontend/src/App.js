@@ -15,6 +15,7 @@ import QuizResults from "./components/pages/quiz/QuizResults";
 import ExploreQuiz from "./components/pages/quiz/ExploreQuiz";
 import LeaderBoard from "./components/pages/quiz/LeaderBoard";
 import ViewQuiz from "./components/pages/quiz/ViewQuiz";
+import { LearnContent } from "./components/pages/learn/LearnContent";
 
 function App() {
 
@@ -50,6 +51,7 @@ function App() {
                             <Route element={<ProtectedRoutes />}>
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/generatequiz" element={<GenerateQuiz />} />
+                                <Route path="/attemptquiz/learn/:learnId" element={<LearnContent/>} />
                                 <Route path="/attemptquiz/:assessmentId" element={<QuizAttempt/>} />
                                 <Route path="/quizResults/:assessmentId" element={<QuizResults />} />
                             </Route>
