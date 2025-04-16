@@ -66,3 +66,12 @@ export const ask = async (learnId, newMessages, oldMessages) => {
     throw error;
   }
 };
+
+export const getMetaData =  async (learnId) => {
+    try {
+        const response = await userAxiosInstance.get(`/${learnId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching learn metadata:", error);
+    }
+}

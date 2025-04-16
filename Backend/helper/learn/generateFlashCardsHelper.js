@@ -37,6 +37,7 @@ const generateFlashCardsHelper = async (content) => {
         - Make answers accurate and concise.
         - Aim for questions that help with understanding and memory retention.
         - Use double quotes for all string values, not single quotes.
+        - generate a minimum of 5 flashcards and a maximum of 11 flashcards.
 
         Content to convert into flashcards:
         \n\n${content}

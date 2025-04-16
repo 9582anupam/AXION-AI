@@ -27,13 +27,14 @@ const ActionSelector = ({ inputType, url, onActionSelect, file, cloudinaryUrl, c
           folder: 'assessments/media',
           resourceType
         });
+        console.log('File uploaded to Cloudinary: Action Selector', cloudinaryResult);
 
         if (cloudinaryResult.url) {
           // Fetch learnID and other Metadata
           const LearnResponse = await fetchLearnData(
             cloudinaryResult.original_filename, 
             cloudinaryResult.url, 
-            (inputType === 'mp3-local' || inputType === 'mp4-local' ? 'video' : inputType)
+            (inputType === 'mp3-local' ? 'audio' : inputType === 'mp4-local' ? 'video' : inputType)
           );
           navigate(`/attemptquiz/learn/${inputType}/${LearnResponse.data._id}`);
         }
