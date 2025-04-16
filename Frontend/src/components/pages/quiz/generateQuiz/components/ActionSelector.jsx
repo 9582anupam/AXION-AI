@@ -35,7 +35,7 @@ const ActionSelector = ({ inputType, url, onActionSelect, file, cloudinaryUrl, c
             cloudinaryResult.url, 
             (inputType === 'mp3-local' || inputType === 'mp4-local' ? 'video' : inputType)
           );
-          navigate(`/attemptquiz/learn/${LearnResponse.data._id}`);
+          navigate(`/attemptquiz/learn/${inputType}/${LearnResponse.data._id}`);
         }
       } else if (url) {
         // Handle URL-based inputs
@@ -45,7 +45,7 @@ const ActionSelector = ({ inputType, url, onActionSelect, file, cloudinaryUrl, c
           url, 
           inputType === 'mp3-url' ? 'audio' : inputType === 'mp4-url' ? 'video' : inputType
         );
-        navigate(`/attemptquiz/learn/${LearnResponse.data._id}`);
+        navigate(`/attemptquiz/learn/${inputType}/${LearnResponse.data._id}`);
       }
     } catch (error) {
       console.error("Error during learn processing:", error);

@@ -333,54 +333,59 @@ const GenerateQuiz = () => {
 
 
 
-        if (assessmentAction === "learn") {
-            setIsLearning(true);
-            // by deault i am taking to learn page  if nothing match
-            if ((selectedInput.id === 'mp3-local' || selectedInput.id === 'mp4-local' || selectedInput.id === 'document')) {
-                try {
-                    // Always use Cloudinary approach - no fallback to local
-                    console.log('Preparing file upload to Cloudinary...');
+        // if (assessmentAction === "learn") {
+        //     setIsLearning(true);
+        //     // by deault i am taking to learn page  if nothing match
+        //     // In your component where you handle the upload/navigation:
+        //     if (selectedInput.id === 'mp3-local' || selectedInput.id === 'mp4-local' || selectedInput.id === 'document') {
+        //         try {
+        //             console.log('Preparing file upload to Cloudinary...');
+        //             const { uploadToCloudinary, getResourceType } = await import('../../../../utils/cloudinaryUtils');
 
-                    // Dynamically import to avoid bundling issues
-                    const { uploadToCloudinary, getResourceType } = await import('../../../../utils/cloudinaryUtils');
+        //             const resourceType = getResourceType(file);
+        //             console.log(`Uploading ${file.name} (${file.size} bytes) to Cloudinary as ${resourceType}...`);
 
-                    // Upload to Cloudinary with appropriate resource type
-                    const resourceType = getResourceType(file);
-                    console.log(`Uploading ${file.name} (${file.size} bytes) to Cloudinary as ${resourceType}...`);
+        //             const cloudinaryResult = await uploadToCloudinary(file, {
+        //                 folder: 'assessments/media',
+        //                 resourceType
+        //             });
 
-                    const cloudinaryResult = await uploadToCloudinary(file, {
-                        folder: 'assessments/media',
-                        resourceType
-                    });
+        //             console.log('File uploaded to Cloudinary:', cloudinaryResult);
 
-                    console.log('File uploaded to Cloudinary:', cloudinaryResult);
+        //             if (cloudinaryResult.url) {
+        //                 const LearnResponse = await fetchLearnData(
+        //                     cloudinaryResult.original_filename,
+        //                     cloudinaryResult.url,
+        //                     (selectedInput.id === 'mp3-local' || selectedInput.id === 'mp4-local') ? 'video' : selectedInput.id
+        //                 );
+        //                 console.log(LearnResponse);
 
-                    if (cloudinaryResult.url) {
-                        //Fetch learnID and other Metadata;
-                        const LearnResponse = await fetchLearnData(cloudinaryResult.original_filename, cloudinaryResult.url, (selectedInput.id === 'mp3-local' || selectedInput.id === 'mp4-local' ? 'video' : selectedInput.id));
-                        console.log(LearnResponse)
-                        navigate(`/attemptquiz/learn/${LearnResponse.data._id}`);
-                        console.log(cloudinaryResult.url)
-                    }
+        //                 // Modified navigation path to match the route
+        //                 navigate(`/attemptquiz/learn/${LearnResponse.data._id}/${selectedInput.id}`, {
+        //                     state: { contentUrl: cloudinaryResult.url }
+        //                 });
+        //             }
+        //         } catch (error) {
+        //             console.error("Error generating quiz:", error);
+        //             throw error;
+        //         }
+        //     } else {
+        //         const title = inputValue.split('/');
+        //         const LearnResponse = await fetchLearnData(
+        //             title[title.length - 1],
+        //             inputValue,
+        //             selectedInput.id === 'mp3-url' ? 'audio' : selectedInput.id === 'mp4-url' ? 'video' : selectedInput.id
+        //         );
+        //         console.log(LearnResponse);
 
+        //         // Modified navigation path to match the route
+        //         navigate(`/attemptquiz/learn/${LearnResponse.data._id}/${selectedInput.id}`, {
+        //             state: { contentUrl: inputValue }
+        //         });
+        //     }
 
-
-                    // Use the URL-based endpoint for processing
-                } catch (error) {
-                    console.error("Error generating quiz:", error);
-                    throw error;
-                }
-            } else {
-                const title = inputValue.split('/')
-                const LearnResponse = await fetchLearnData(title[title.length - 1], inputValue, selectedInput.id === 'mp3-url' ? 'audio' : selectedInput.id === 'mp4-url' ? 'video' : selectedInput.id);
-                console.log(LearnResponse)
-                navigate(`/attemptquiz/learn/${LearnResponse.data._id}`);
-            }
-
-
-
-            return;
-        }
+        //     return;
+        // }
 
 
         // Set isDownloading based on the action
@@ -517,7 +522,7 @@ const GenerateQuiz = () => {
     return (
         <section className="py-16 bg-slate-900 -mt-2 min-h-screen">
             {/* Loading overlay */}
-            <LoadingOverlay loading={loading} isDownloading={isDownloading} isLearning={isLearning}/>
+            <LoadingOverlay loading={loading} isDownloading={isDownloading} isLearning={isLearning} />
 
             <div className="container mx-auto px-6 -mt-12">
                 <div className="text-center mb-12">
@@ -571,8 +576,8 @@ const GenerateQuiz = () => {
                                         {/* Continue Button */}
                                         <button
                                             className={`w-full py-4 ${isUploading
-                                                    ? "bg-slate-700 cursor-not-allowed"
-                                                    : "bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700"
+                                                ? "bg-slate-700 cursor-not-allowed"
+                                                : "bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700"
                                                 } text-white font-bold rounded-lg shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all`}
                                             onClick={handleContinue}
                                             disabled={isUploading}
@@ -585,13 +590,13 @@ const GenerateQuiz = () => {
                         )}
 
                         {/* Step 2: Assessment Options */}
-                        {showOptionsStep  && (
+                        {showOptionsStep && (
                             <>
                                 {/* Action Selection Options */}
                                 {!assessmentAction ? (
-                                    <ActionSelector  
-                                        inputType={selectedInput.id} 
-                                        url={inputValue} 
+                                    <ActionSelector
+                                        inputType={selectedInput.id}
+                                        url={inputValue}
                                         onActionSelect={handleActionSelect}
                                         file={file}
                                         cloudinaryUrl={cloudinaryUrl}
@@ -630,13 +635,13 @@ const GenerateQuiz = () => {
                                             </button>
                                             <button
                                                 className={`flex-1 py-4 ${loading
-                                                        ? "bg-slate-700 cursor-not-allowed"
-                                                        : "bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700"
+                                                    ? "bg-slate-700 cursor-not-allowed"
+                                                    : "bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700"
                                                     } text-white font-bold rounded-lg shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all`}
                                                 onClick={handleSubmit}
                                                 disabled={loading}
                                             >
-                                                {loading ? "Generating..." : assessmentAction === "download" ? "Download Assessment" : assessmentAction === "take" ? "Take Assessment" :  "Start Learning"}
+                                                {loading ? "Generating..." : assessmentAction === "download" ? "Download Assessment" : assessmentAction === "take" ? "Take Assessment" : "Start Learning"}
                                             </button>
                                         </div>
                                     </>
