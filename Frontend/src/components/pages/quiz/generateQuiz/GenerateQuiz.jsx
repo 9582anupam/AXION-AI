@@ -526,7 +526,7 @@ const GenerateQuiz = () => {
 
             <div className="container mx-auto px-6 -mt-12">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Generate Your Assessment</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Upload Your Content</h2>
                     <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 to-indigo-600 mx-auto mb-6"></div>
                 </div>
 

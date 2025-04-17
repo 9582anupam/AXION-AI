@@ -57,13 +57,13 @@ const Header = () => {
                 Home
                 </Link>
                 <Link to="/generatequiz" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                Generate Assessment
+                Start Learning
                 </Link>
                 <Link to="/exploreQuiz" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                Explore Assessment
+                Explore More
                 </Link>
                 <Link to="/leaderboard" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                LeaderBoard
+                Leaderboard
                 </Link>
                 {/* <Link to="#rewards" className="text-slate-300 hover:text-cyan-400 transition-colors">
                 Rewards
