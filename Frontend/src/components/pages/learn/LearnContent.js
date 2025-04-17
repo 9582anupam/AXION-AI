@@ -4,6 +4,7 @@ import PdfViewer from "../../contentViewer/PdfViewer";
 import { getNotes, getSummary, getFlashes, ask, getMetaData } from "../../../services/learn/learnService";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm';
+import "./pdfViewer.css";
 
 export const LearnContent = () => {
     const { learnId } = useParams();
@@ -20,12 +21,12 @@ export const LearnContent = () => {
     const [contentType, setContentType] = useState(null);
     const [contentUrl, setContentUrl] = useState(null);
 
-    console.log("contnet-url", contentUrl)
-    console.log("content-Type", contentType)
+    console.log("contnet-url", contentUrl);
+    console.log("content-Type", contentType);
 
 
     const extractYouTubeID = url =>
-        (url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|embed\/))([^&?/]+)/) || [])[1] || null
+        (url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|embed\/))([^&?/]+)/) || [])[1] || null;
 
 
 
@@ -39,7 +40,7 @@ export const LearnContent = () => {
                     getNotes(learnId),
                     getMetaData(learnId)
                 ]);
-                console.log("metadata:", metaData)
+                console.log("metadata:", metaData);
 
                 setSummary(summaryResponse.data);
                 setFlashes(flashesResponse.data);
@@ -106,7 +107,7 @@ export const LearnContent = () => {
 
 
     return (
-        <div className="min-h-screen py-6">
+        <div className=" py-6">
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="mb-6">
@@ -120,15 +121,18 @@ export const LearnContent = () => {
                 </div>
 
                 {/* Main content area with two columns */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-150px)]">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left column - Content display */}
-                    <div className=" rounded-2xl  shadow-black/20 h-full flex items-center flex-col justify-center ">
+                    <div className=" rounded-2xl  shadow-black/20 w-full flex items-center flex-col justify-center h-[calc(100vh-150px)]">
                         {contentType === 'youtube' && (
                             <iframe className="border-2 border-slate-500 rounded-md" width="760" height="515" src={`https://www.youtube.com/embed/${extractYouTubeID(contentUrl)}?si=CfnugBkDBSNn7Se9`} title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                         )}
                         {
                             (contentUrl !== null && contentType === 'document' && contentUrl?.endsWith('pdf')) && (
-                                <PdfViewer fileUrl={contentUrl} />
+                                <div className="inner-border">
+                                    <PdfViewer fileUrl={contentUrl} />
+                                </div>
+
                             )
                         }
 
@@ -142,6 +146,7 @@ export const LearnContent = () => {
                                     width="100%"
                                     height="600px"
                                     frameBorder="0"
+                                    title="ppt"
                                 />
                             )
                         }
