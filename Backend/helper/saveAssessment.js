@@ -7,6 +7,7 @@ import Assessment from '../models/assessment.model.js';
 
 export const saveAssessment = async (assessmentData, sourceInfo, options = {}) => {
   // assessmentData = assessmentData[0]; //i know bad practice.
+  console.log(assessmentData);
   try {
     // Extract questions from assessment data
     const questions = Array.isArray(assessmentData[0]) 

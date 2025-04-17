@@ -22,7 +22,7 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
                 "explanation": "brief_explanation_of_answer",
                 "reference": "specific_part_of_content_this_relates_to"
             }`;
-            
+        
             const shortAnswerStructure = `{
                 "id": "short_number",
                 "type": "SHORT_ANSWER",
@@ -31,7 +31,7 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
                 "explanation": "brief_explanation_of_answer",
                 "reference": "specific_part_of_content_this_relates_to"
             }`;
-            
+        
             const longAnswerStructure = `{
                 "id": "long_number",
                 "type": "LONG_ANSWER",
@@ -40,7 +40,7 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
                 "explanation": "comprehensive_explanation_covering_key_points",
                 "reference": "specific_part_of_content_this_relates_to"
             }`;
-            
+        
             prompt = `
                 You are an expert assessment creator. Create a ${difficulty} difficulty mixed assessment based on the following content:
                 
@@ -51,39 +51,54 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
                 - 5 short answer questions that require 1-2 sentence responses
                 - 5 long answer questions that require paragraph-length responses (3-5 sentences)
                 
-                Format your response as a structured JSON array without any additional explanation. Each question should follow one of these structures based on its type:
+                Format your response as a structured JSON array of this format:
+                [[{question1}, {question2}, ...], {metadata}]
+                Do not include any additional explanation.
                 
+                Each question should follow one of these structures based on its type:
+        
                 For MCQ questions:
                 ${mcqStructure}
-                
+        
                 For Short Answer questions:
                 ${shortAnswerStructure}
-                
+        
                 For Long Answer questions:
                 ${longAnswerStructure}
-                
+        
                 Ensure all questions are directly relevant to the content, varied in topic coverage, and appropriate for ${difficulty} difficulty level.
                 Generate the assessment in ${language} only, regardless of the language of the reference content.
             `;
         } else {
             jsonStructure = getJsonStructureByType(type);
-
+        
             prompt = `
                 You are an expert assessment creator. Create a ${difficulty} difficulty assessment with ${numberOfQuestions} ${type} questions based on the following content:
-
+        
                 ${reference}
-
+        
                 ${getQuestionFormatInstructions(type)}
-
-                Format your response as a structured JSON array without any additional explanation. json should include of length of 2 like this  arr[0] is for all question object and arr[1] is for metadata object. Each question should have the following structure:
-                ${jsonStructure} and metedata include title, description, array of tags , array of category of the assessment/content.
-
-
+        
+                Format your response as a structured JSON array of this format:
+                [[{question1}, {question2}, ...], {metadata}]
+                Do not include any additional explanation.
+                
+                Each question should have the following structure:
+                ${jsonStructure}
+                
+                Metadata should include:
+                {
+                    "title": "title_of_the_assessment",
+                    "description": "brief_summary_of_the_assessment",
+                    "tags": ["tag1", "tag2", ...],
+                    "category": ["category1", "category2", ...]
+                }
+        
                 Ensure questions are directly relevant to the content, varied in topic coverage, and appropriate for ${difficulty} difficulty level.
                 Generate the assessment in ${language} only, regardless of the language of the reference content.
             `;
         }
-
+        
         const result = await model.generateContent(prompt);
         const response =  result.response;
         // console.log(response.text());
@@ -165,3 +180,4 @@ function getQuestionFormatInstructions(type) {
 }
 
 export default generateAssessmentPromptCall;
+
