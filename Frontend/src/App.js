@@ -51,7 +51,7 @@ function App() {
                             <Route element={<ProtectedRoutes />}>
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/generatequiz" element={<GenerateQuiz />} />
-                                <Route path="/attemptquiz/learn/:inputType/:learnId" element={<LearnContent/>} />
+                                <Route path="/attemptquiz/learn/:inputType/:learnId/" element={<LearnContent/>} />
                                 <Route path="/attemptquiz/:assessmentId" element={<QuizAttempt/>} />
                                 <Route path="/quizResults/:assessmentId" element={<QuizResults />} />
                             </Route>

@@ -7,6 +7,12 @@ const QuestionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    //so that i can dynamically show input on the frontend side.
+    type: {
+        type: String,
+        enum: ["MCQ", "TF", "SHORT_ANSWER", "LONG_ANSWER", "ESSAY", "FILL_IN_BLANK", "MATCHING", "ASSERTION_REASONING"],
+        default: "MCQ"
+    },
     question: {
         type: String,
         required: true,

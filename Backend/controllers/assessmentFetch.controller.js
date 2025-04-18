@@ -2,6 +2,7 @@ import Assessment from "../models/assessment.model.js";
 
 
 const getAssessmentById = async (req, res) => {
+    console.log("assessment id is", req.params.id) , "is called";
     try {
         const assessment = await Assessment.findById(req.params.id);
         if (!assessment) {

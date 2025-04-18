@@ -2,15 +2,20 @@ import Assessment from "../models/assessment.model.js";
 import AssessmentResult from "../models/assessmentResult.model.js";
 import mongoose from "mongoose";
 import User from "../models/user.model.js";
+import { checkUserAnswer } from "../helper/checkUserAnswer.js";
+
 
 /**
- * Submit user's assessment result and save to database
+ * Submit user's asseimport dotenv from "dotenv";
+ssment result and save to database
  */
 export const submitAssessmentResult = async (req, res) => {
   try {
     const { assessmentId } = req.params;
     const userId = req.user._id;
     const { answers, timeTaken } = req.body;
+
+    console.log("answers are", answers);
 
     // Validate essential inputs
     if (!answers || !Array.isArray(answers)) {
@@ -22,6 +27,7 @@ export const submitAssessmentResult = async (req, res) => {
 
     // Find the assessment
     const assessment = await Assessment.findById(assessmentId);
+    console.log( "assessment looks like this: ", assessment);
     if (!assessment) {
       return res.status(404).json({
         success: false,
@@ -32,7 +38,18 @@ export const submitAssessmentResult = async (req, res) => {
     // Process each answer and calculate score
     let score = 0;
     const questionAnswers = [];
-
+    let geminiResponseAnswer = null;
+    let needToCheck = false;
+    let thresHold = 6;
+    if (
+      assessment.type === "SHORT_ANSWER" ||
+      assessment.type === "LONG_ANSWER" ||
+      assessment.type === "ESSAY" ||
+      assessment.type === "FILL_IN_BLANK"
+    ){
+      geminiResponseAnswer = await checkUserAnswer(assessment, answers);
+      needToCheck = true;
+    }
     for (const answer of answers) {
       // Find the question in the assessment
       const question = assessment.questions.find(
@@ -41,8 +58,10 @@ export const submitAssessmentResult = async (req, res) => {
 
       if (!question) continue; // Skip if question not found
 
-      // Check if the answer is correct
-      const isCorrect = question.correctAnswer === answer.userAnswer;
+
+      // if assessment.type === mix , then it will be useful //TODO--
+      const isCorrect = needToCheck ? geminiResponseAnswer[question.id - 1].score >= thresHold : question.correctAnswer === answer.userAnswer;
+
       if (isCorrect) score++;
 
       // Create the question answer record
@@ -52,6 +71,8 @@ export const submitAssessmentResult = async (req, res) => {
         userAnswer: answer.userAnswer,
         correctAnswer: question.correctAnswer,
         isCorrect,
+        ansScore: needToCheck ? geminiResponseAnswer[question.id - 1]?.score || 0 : (isCorrect ? 10 : 0),
+        feedback: needToCheck ? geminiResponseAnswer[question.id - 1]?.feedback : null,
       });
     }
 
@@ -71,6 +92,7 @@ export const submitAssessmentResult = async (req, res) => {
       answers: questionAnswers,
     });
 
+    console.log("Eveyrhing is good here till before submitting assessment")
     // Save result to database
     const savedResult = await assessmentResult.save();
 
@@ -117,6 +139,8 @@ export const getResultByUserAndAssessmentId = async (req, res) => {
     const { assessmentId } = req.params;
     const userId = req.user._id;
 
+    console.log(assessmentId, userId);
+
     const result = await AssessmentResult.findOne({
       user: userId,
       assessment: assessmentId,
@@ -156,6 +180,9 @@ export const getResultByUserAndAssessmentId = async (req, res) => {
           correctAnswer: answer.correctAnswer,
           explanation: question.explanation,
           isCorrect: answer.isCorrect,
+          feedback: answer.feedback,
+          questionType: question.type,
+          ansScore: answer.ansScore
         };
       }),
     };

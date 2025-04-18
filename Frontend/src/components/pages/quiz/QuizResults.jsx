@@ -174,12 +174,7 @@ const QuizResults = () => {
 
                             <hr />
 
-                            {
-                                showDownloadOption && <ResultModal quizData={quizData} onClose={() => setShowDownloadOption(false)} />
-                            }
-
-
-
+                            {showDownloadOption && <ResultModal quizData={quizData} onClose={() => setShowDownloadOption(false)} />}
 
                             {questions.map((question, index) => (
                                 <div
@@ -193,7 +188,7 @@ const QuizResults = () => {
                                         <div className="w-full">
                                             <h3 className="text-lg font-medium text-slate-100 mb-4">{question.question}</h3>
                                             <div className="grid gap-3">
-                                                {question.options.map((option, optionIndex) => {
+                                                {question.options && question.options.map((option, optionIndex) => {
                                                     const isUserAnswer = question.userAnswer === option
                                                     const isCorrectAnswer = question.correctAnswer === option
                                                     let optionClass = "p-4 rounded-lg transition-all duration-200 "
@@ -236,6 +231,99 @@ const QuizResults = () => {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {(question.questionType === "SHORT_ANSWER" ||
+                                        question.questionType === "FILL_IN_BLANK" ||
+                                        question.questionType === "LONG_ANSWER" ||
+                                        question.questionType === "ESSAY" ||
+                                        question.questionType === "MATCH_FOLLOWING") && (
+                                            <div className="mt-4 flex justify-end">
+                                                <div className="relative w-20 h-20">
+                                                    {/* Circular background */}
+                                                    <svg className="w-full h-full" viewBox="0 0 36 36">
+                                                        {/* Background circle */}
+                                                        <path
+                                                            d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                            fill="none"
+                                                            stroke="#1e293b"
+                                                            strokeWidth="3"
+                                                        />
+                                                        {/* Progress circle - using percentage based on score */}
+                                                        <path
+                                                            d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                            fill="none"
+                                                            stroke="#06b6d4"
+                                                            strokeWidth="3"
+                                                            strokeDasharray={`${(question.ansScore || 0) / (question.maxScore || 10) * 100}, 100`}
+                                                            strokeLinecap="round"
+                                                        />
+                                                    </svg>
+                                                    {/* Score text in center */}
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                        <span className="text-cyan-400 font-bold text-lg">
+                                                            {question.ansScore || 0}
+                                                        </span>
+                                                        <span className="text-slate-400 text-xs">
+                                                            / {question.maxScore || 10}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    {(question.questionType === "SHORT_ANSWER" ||
+                                        question.questionType === "FILL_IN_BLANK" ||
+                                        question.questionType === "LONG_ANSWER" ||
+                                        question.questionType === "ESSAY" ||
+                                        question.questionType === "MATCH_FOLLOWING") && (
+                                            <div className={`mt-6 ${question.isCorrect ? "bg-green-500/50" : "bg-red-500/50"} p-4 rounded-lg border border-slate-700/50`}>
+                                                <h4 className="text-sm font-medium text-cyan-400 flex items-center">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="h-4 w-4 mr-1"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
+                                                    </svg>
+                                                    Your Answer:
+                                                </h4>
+                                                <p className="text-slate-300 text-sm leading-relaxed">
+                                                    {question.userAnswer}
+                                                </p>
+                                                <br />
+
+                                                <h4 className="text-sm font-medium text-cyan-400 mb-2 flex items-center">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="h-4 w-4 mr-1"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
+                                                    </svg>
+                                                    Feedback:
+                                                </h4>
+                                                <p className="text-slate-300 text-sm leading-relaxed">
+                                                    {question.feedback}
+                                                </p>
+                                            </div>
+                                        )}
 
                                     <div className="mt-6 bg-slate-700/30 p-4 rounded-lg border border-slate-700/50">
                                         <h4 className="text-sm font-medium text-cyan-400 mb-2 flex items-center">

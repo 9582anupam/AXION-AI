@@ -674,64 +674,135 @@ class TabManager {
     createTalkToVideoContent() {
         const contentWrapper = document.createElement("div");
         contentWrapper.className = "content-wrapper";
-        contentWrapper.style.cssText = "padding: 16px; background-color: var(--bg-dark); border-radius: 12px; display: flex; flex-direction: column; height: 400px;";
+        contentWrapper.style.cssText = `
 
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            box-sizing: border-box;
+        `;
+    
         // Chat history container
         const chatHistory = document.createElement("div");
         chatHistory.id = "chat-history";
         chatHistory.className = "chat-history";
+        chatHistory.style.cssText = `
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            background-color: #1e1e1e;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        `;
         contentWrapper.appendChild(chatHistory);
-
+    
         // Input container
         const inputContainer = document.createElement("div");
         inputContainer.className = "input-container";
-
+        inputContainer.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        `;
+    
         // Input field
         const inputField = document.createElement("input");
         inputField.type = "text";
         inputField.className = "input-field";
         inputField.placeholder = "Ask anything about this video...";
-
+        inputField.style.cssText = `
+            flex: 1;
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        `;
+    
         // Send button
         const sendButton = document.createElement("div");
         sendButton.className = "send-button";
         sendButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
-        
+        sendButton.style.cssText = `
+            cursor: pointer;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        `;
+        sendButton.addEventListener("mouseover", () => {
+            sendButton.style.opacity = "0.8";
+        });
+        sendButton.addEventListener("mouseout", () => {
+            sendButton.style.opacity = "1";
+        });
+
+ 
+    
         // Function to add messages to chat
         const addMessageToChat = (message, isUser) => {
             const messageElement = document.createElement("div");
-            messageElement.className = `chat-message ${isUser ? 'user' : 'bot'}`;
-            
-            const md = window.markdownit();
-            let cleanedMarkdown = message;
-            if(!isUser){
-                cleanedMarkdown = message.substring(12);
-            }
-            
-            messageElement.innerHTML = md.render(cleanedMarkdown);
+            messageElement.style.cssText = `
+                border-radius: 8px;
+                max-width: 80%;
+                align-self: ${isUser ? "flex-end" : "flex-start"};
+                font-size: 19px;
+                color: #fff;
+                height:500px
+                word-wrap: break-word;
+            `;
+
+            console.log(message);
+            let newMesg = message;
+    
+               if(!isUser) {
+                newMesg = message.substring(8, message.length - 3);
+               }
+                messageElement.innerHTML = newMesg
+    
+            // messageElement.classList.add("chat-message");
+            // messageElement.appendChild(style);
             chatHistory.appendChild(messageElement);
             chatHistory.scrollTop = chatHistory.scrollHeight;
         };
-
+    
         // Function to handle sending a message
         const handleSendMessage = async () => {
             const userMessage = inputField.value.trim();
             if (!userMessage) return;
-
+    
             addMessageToChat(`${userMessage}`, true);
             inputField.value = "";
-            
+    
             // Show typing indicator
             const typingIndicator = document.createElement("div");
             typingIndicator.className = "chat-message bot";
             typingIndicator.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-            typingIndicator.style.cssText = "padding: 12px 16px;";
+            typingIndicator.style.cssText = `
+                padding: 12px 16px;
+                background-color: #444;
+                border-radius: 8px;
+                align-self: flex-start;
+                max-width: 80%;
+            `;
             chatHistory.appendChild(typingIndicator);
             chatHistory.scrollTop = chatHistory.scrollHeight;
-
+    
             try {
                 const geminiResponse = await getGeminiResponse(userMessage);
-                // Remove typing indicator
                 chatHistory.removeChild(typingIndicator);
                 addMessageToChat(` ${geminiResponse}`, false);
             } catch (error) {
@@ -740,24 +811,24 @@ class TabManager {
                 addMessageToChat(`<strong>Error:</strong> Failed to get a response. Please try again.`, false);
             }
         };
-
+    
         // Send message on button click
         sendButton.addEventListener("click", handleSendMessage);
-
+    
         // Send message on Enter key press
         inputField.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
                 handleSendMessage();
             }
         });
-
+    
         inputContainer.appendChild(inputField);
         inputContainer.appendChild(sendButton);
         contentWrapper.appendChild(inputContainer);
-
+    
         return contentWrapper;
     }
-
+    
     createSummaryContent() {
         const contentWrapper = document.createElement("div");
         contentWrapper.className = "content-wrapper";
@@ -1188,104 +1259,65 @@ async function fetchSummary() {
 
 // Get response from Gemini AI for user queries about the video
 async function getGeminiResponse(prompt) {
-    const formattedtext = videoSubTitle?.transcript?.map((sub) => `${sub.start}s - ${sub.start + sub.duration}s: ${sub.text}`).join("\n");
-    
+    const formattedtext = videoSubTitle?.transcript?.map(sub => {
+        const start = sub.start < 60 ? `${Math.round(sub.start)}s` : `${Math.round(sub.start / 60)}min`;
+        const end = (sub.start + sub.duration) < 60 ? `${Math.round(sub.start + sub.duration)}s` : `${Math.round((sub.start + sub.duration) / 60)}min`;
+        return `${start} - ${end}: ${sub.text}`;
+    }).join("\n");
+
     const context = `
-    🎯 YouTube AI Extension – Context & Response Guidelines
-    
-    📝 Purpose  
-    You are an AI extension designed by Team Decent Dev to assist users by providing insights, summaries, and relevant information only related to the YouTube video they are currently watching. Your responses must be based strictly on the provided video subtitles.  
-    
-    📌 Current Video Subtitle:  
-    "${formattedtext}"  
-    
-    ---
-    
-    📜 Rules & Guidelines  
-    Format the given time in seconds or minutes for better readability:
-    If the time is less than 60 seconds, display it in seconds.
-    If the time is 60 seconds or more, convert and display it in minutes (rounded off to the nearest integer without decimals).
-    Ensure the result is presented in a user-friendly way.
-    Use bold text to emphasize key terms in the output.
-    Wrap the time stamps result in a code block for better visibility.
-    ✅ Response Format  
-    - **Please respond in Markdown** for better rendering on a webpage.  
-    - Use appropriate **headings (#, ##), bullet points (-, *), and code blocks (\`\`\`)** for any code snippets.  
-    - Ensure proper **padding and margin** for readability.  
-    
-    Strict Content Scope
+🎯 YouTube AI Extension – Context & Rules
 
-    Do Not Mention Subtitles:
-    Never inform the user that your responses are based on subtitles.
-    Act as if your knowledge comes from the video itself, not the subtitles.
+🧠 You are an AI assistant created by Team Decent Dev to help users understand YouTube videos better using ONLY the video subtitles (but don't mention that!).
 
-    Strictly Video-Related Responses:
-    Only answer questions directly related to the video's content or its domain.
-    If the query falls within the domain of the video (even if not explicitly mentioned in the subtitles), provide a solution or explanation.
-    For example, if the video is about programming, answer programming-related questions even if the subtitles don't explicitly mention the specific query.
+📌 Current Video Context:
+"${formattedtext}"
 
-    Redirect Unrelated Queries:
-    If the user asks about unrelated topics (e.g., weather, news, general knowledge), politely redirect them to ask about the video instead.
+---
 
-    Ensure responses are concise, accurate, and well-structured.
-    Use Markdown formatting for better readability (e.g., headings, bullet points, code blocks).
-    ---
-    
-    💡 Example Interactions  
-    
-    🎥 **User:** "What is the main topic of this video?"  
-    💬 **AI:**  
-    \`\`\`markdown  
-    The main topic of this video is **[topic]**, as discussed by the creator in the first few minutes.  
-    \`\`\`  
-    
-    ❌ **User:** "What's the weather like today?"  
-    💬 **AI:**  
-    \`\`\`markdown  
-    I'm here to assist with YouTube-related content. Let me know if you have any questions about this video!  
-    \`\`\`  
-    
-    🎞️ **User:** "Can you summarize this video?"  
-    💬 **AI:**  
-    \`\`\`markdown  
-    Sure! This video covers:  
-    - **[Key Point 1]**  
-    - **[Key Point 2]**  
-    - **[Key Point 3]**  
-    
-    The creator discusses **[main ideas]** and provides **[examples/insights]**.  
-    \`\`\`  
-    
-    ⏳ **User:** "When does the creator talk about [topic]?"  
-    💬 **AI:**  
-    \`\`\`markdown  
-    The creator discusses **[topic]** at **[timestamp]**.  
-    
-    ### Summary of that section:  
-    [Brief explanation here]  
-    \`\`\`  
-    
-    ---
-    
-    📌 Response Strategy  
-    ✔ If the query is **related to the video**, provide a **clear, structured, and informative response** in Markdown.  
-    ✔ If the query is **unrelated**, politely inform the user that your assistance is limited to **YouTube video content**.  
-    
-    🚀 Now, generate a response based on these guidelines.
-    `;
-    
+🛠️ Guidelines:
+- Format timestamps:
+  - Use **seconds** if < 60s.
+  - Use **minutes** if ≥ 60s (round to nearest int, no decimals).
+  - Wrap timestamps in a <code> block.
+- Use only these HTML tags: <table>, <p>, <h1>, <h2>, <h3>, <div>, <span>, <ul>, <li>, <a>, <code>
+- All HTML should include inline CSS. Assume background is black, so use light text and padding/margin for readability.
+- Add **bold** text for key points.
+- Style like this:
+  
+Example 1:
+<div style="background-color: #1e1e1e; padding: 16px; border-radius: 8px; color: #fff;">
+    <h2 style="color: #4a90e2;">Chapter 1: Introduction</h2>
+</div>
+
+Example 2:
+<table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+   
+    </tbody>
+</table>
+
+❌ Never mention subtitles were used.
+
+🚫 Unrelated queries (e.g. weather, politics)? Politely say:
+<span style="color:#ccc">"I can only help with questions about this YouTube video. Please ask something related."</span>
+
+✅ DO respond to any topic related to the domain of the video (e.g., if video is about coding, answer coding Qs).
+✅ Keep it HTML only. No Markdown.
+
+Now respond to this:
+"User Query: ${prompt}"
+`;
+
     try {
         const response = await fetch(GEMINI_API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: `${context}\n\nUser Query: ${prompt}` }] }],
+                contents: [{ parts: [{ text: context }] }],
             }),
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";

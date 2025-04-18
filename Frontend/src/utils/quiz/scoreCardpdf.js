@@ -6,7 +6,7 @@ import malayalamFont from '../malyalam';
 
 const generateScoreCardPDF = (quizData, isScoreCard = false) => {
   const { score, maxScore, percentage, timeTaken, questions, language } = quizData;
-
+  console.log("Question looks like this", questions);
   const doc = new jsPDF();
   const normalizedLang = (language || 'english').toLowerCase();
 
@@ -76,7 +76,7 @@ const generateScoreCardPDF = (quizData, isScoreCard = false) => {
     ];
 
     const tableData = questions.map((question, index) => {
-      const isCorrect = question.userAnswer === question.correctAnswer;
+      const isCorrect = question.isCorrect;
       return {
         index: index + 1,
         question: question.question,

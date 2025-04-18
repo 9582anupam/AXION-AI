@@ -52,7 +52,7 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
                 - 5 long answer questions that require paragraph-length responses (3-5 sentences)
                 
                 Format your response as a structured JSON array of this format:
-                [[{question1}, {question2}, ...], {metadata}]
+                [[{question1}, {question2}, ...], {title : title of content, description: description of content, tags: array of tags related to the content, category: array of name of categories related to the content}]
                 Do not include any additional explanation.
                 
                 Each question should follow one of these structures based on its type:
@@ -80,7 +80,7 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
                 ${getQuestionFormatInstructions(type)}
         
                 Format your response as a structured JSON array of this format:
-                [[{question1}, {question2}, ...], {metadata}]
+                [[{question1}, {question2}, ...], {title : title of content, description: description of content, tags: array of tags related to the content, category: array of name of categories related to the content}]
                 Do not include any additional explanation.
                 
                 Each question should have the following structure:
@@ -110,11 +110,13 @@ const generateAssessmentPromptCall = async (reference, type = "MCQ", numberOfQue
 };
 
 // Helper: JSON structure generator
+// enum: ["MCQ", "TF", "SHORT_ANSWER", "LONG_ANSWER", "ESSAY", "FILL_IN_BLANK", "MATCHING", "ASSERTION_REASONING"],
 function getJsonStructureByType(type) {
     switch (type.toUpperCase()) {
         case "MCQ":
             return `{
                 "id": "unique_number",
+                "type": "MCQ",
                 "question": "the_question_text",
                 "options": ["option_a", "option_b", "option_c", "option_d"],
                 "correctAnswer": "the_correct_option",
@@ -124,15 +126,26 @@ function getJsonStructureByType(type) {
         case "TF":
             return `{
                 "id": "unique_number",
+                "type": "TF",
                 "question": "the_question_text",
                 "options": ["True", "False"],
                 "correctAnswer": "True or False",
                 "explanation": "brief_explanation_of_answer",
                 "reference": "specific_part_of_content_this_relates_to"
             }`;
+        case "FILL_IN_BLANK":
+            return `{
+                "id": "unique_number",
+                "type": "FILL_IN_BLANK",
+                "question": "the_question_text_with_blank",
+                "correctAnswer": "the_correct_answer",
+                "explanation": "brief_explanation_of_answer",
+                "reference": "specific_part_of_content_this_relates_to"
+            }`;
         case "ASSERTION_REASONING":
             return `{
                 "id": "unique_number",
+                "type": "ASSERTION_REASONING",
                 "question": "Assertion: [assertion statement]\\nReason: [reason statement]",
                 "options": [
                     "Both assertion and reason are true, and the reason correctly explains the assertion",
@@ -144,9 +157,28 @@ function getJsonStructureByType(type) {
                 "explanation": "brief_explanation_of_the_relationship_between_assertion_and_reason",
                 "reference": "specific_part_of_content_this_relates_to"
             }`;
+        case "SHORT_ANSWER":
+            return `{
+                "id": "unique_number",
+                "type": "SHORT_ANSWER",
+                "question": "the_question_text",
+                "correctAnswer": "the_correct_answer",
+                "explanation": "brief_explanation_of_answer",
+                "reference": "specific_part_of_content_this_relates_to"
+            }`;
+        case "LONG_ANSWER":
+            return `{
+                "id": "unique_number",
+                "type": "LONG_ANSWER",
+                "question": "the_question_text",
+                "correctAnswer": "the_correct_answer",
+                "explanation": "comprehensive_explanation_covering_key_points",
+                "reference": "specific_part_of_content_this_relates_to"
+            }`;
         default:
             return `{
                 "id": "unique_number",
+                "type": "${type.toUpperCase()}",
                 "question": "the_question_text",
                 "correctAnswer": "the_correct_answer",
                 "explanation": "",
@@ -154,6 +186,7 @@ function getJsonStructureByType(type) {
             }`;
     }
 }
+
 
 // Helper: Prompt instructions based on type
 function getQuestionFormatInstructions(type) {
