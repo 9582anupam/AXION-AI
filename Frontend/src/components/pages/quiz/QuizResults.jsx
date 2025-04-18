@@ -186,7 +186,39 @@ const QuizResults = () => {
                                             {index + 1}
                                         </div>
                                         <div className="w-full">
-                                            <h3 className="text-lg font-medium text-slate-100 mb-4">{question.question}</h3>
+                                            <div className="flex justify-between items-start mb-4">
+                                                <h3 className="text-lg font-medium text-slate-100">{question.question}</h3>
+                                                
+                                                {(question.questionType === "SHORT_ANSWER" ||
+                                                    question.questionType === "FILL_IN_BLANK" ||
+                                                    question.questionType === "LONG_ANSWER" ||
+                                                    question.questionType === "ESSAY" ||
+                                                    question.questionType === "MATCH_FOLLOWING") && (
+                                                        <div className="ml-3 shrink-0">
+                                                            <div className="relative w-16 h-16">
+                                                                {/* Score display with improved visibility */}
+                                                                <div className="absolute inset-0 rounded-full bg-slate-800 border-2 border-cyan-500/30 flex items-center justify-center overflow-hidden">
+                                                                    {/* Score fill background */}
+                                                                    <div 
+                                                                        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-cyan-500 to-cyan-400/50 transition-all duration-500"
+                                                                        style={{ 
+                                                                            height: `${((question.ansScore || 0) / (question.maxScore || 10)) * 100}%`,
+                                                                        }}
+                                                                    ></div>
+                                                                    {/* Score text */}
+                                                                    <div className="relative z-10 flex flex-col items-center justify-center">
+                                                                        <span className="text-white font-bold text-lg">
+                                                                            {question.ansScore || 0}
+                                                                        </span>
+                                                                        <span className="text-slate-300 text-xs font-medium">
+                                                                            / {question.maxScore || 10}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                )}
+                                            </div>
                                             <div className="grid gap-3">
                                                 {question.options && question.options.map((option, optionIndex) => {
                                                     const isUserAnswer = question.userAnswer === option
@@ -232,48 +264,6 @@ const QuizResults = () => {
                                         </div>
                                     </div>
 
-                                    {(question.questionType === "SHORT_ANSWER" ||
-                                        question.questionType === "FILL_IN_BLANK" ||
-                                        question.questionType === "LONG_ANSWER" ||
-                                        question.questionType === "ESSAY" ||
-                                        question.questionType === "MATCH_FOLLOWING") && (
-                                            <div className="mt-4 flex justify-end">
-                                                <div className="relative w-20 h-20">
-                                                    {/* Circular background */}
-                                                    <svg className="w-full h-full" viewBox="0 0 36 36">
-                                                        {/* Background circle */}
-                                                        <path
-                                                            d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831
-            a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                            fill="none"
-                                                            stroke="#1e293b"
-                                                            strokeWidth="3"
-                                                        />
-                                                        {/* Progress circle - using percentage based on score */}
-                                                        <path
-                                                            d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831
-            a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                            fill="none"
-                                                            stroke="#06b6d4"
-                                                            strokeWidth="3"
-                                                            strokeDasharray={`${(question.ansScore || 0) / (question.maxScore || 10) * 100}, 100`}
-                                                            strokeLinecap="round"
-                                                        />
-                                                    </svg>
-                                                    {/* Score text in center */}
-                                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                        <span className="text-cyan-400 font-bold text-lg">
-                                                            {question.ansScore || 0}
-                                                        </span>
-                                                        <span className="text-slate-400 text-xs">
-                                                            / {question.maxScore || 10}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
                                     {(question.questionType === "SHORT_ANSWER" ||
                                         question.questionType === "FILL_IN_BLANK" ||
                                         question.questionType === "LONG_ANSWER" ||
