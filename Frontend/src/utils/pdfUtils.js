@@ -12,6 +12,7 @@ import malyalamFont from './malyalam' // Base64-encoded Malayalam font
  * @returns {Object} - Result object with success status and filename
  */
 export const generateAssessmentPDF = (assessmentData, title = "Generated Assessment", language = 'english') => {
+  console.log(assessmentData)
   try {
     const doc = new jsPDF()
     const normalizedLang = (language || 'english').toLowerCase()

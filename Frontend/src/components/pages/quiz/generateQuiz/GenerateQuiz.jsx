@@ -455,10 +455,10 @@ const GenerateQuiz = () => {
                         ? file.name.split('.')[0]
                         : inputValue.substring(0, 30);
 
-                    const pdfTitle = `Assessment - ${sourceTitle}`;
+                    // const pdfTitle = `Assessment - ${sourceTitle}`;
 
                     // Generate and download the PDF
-                    generateAssessmentPDF(questions, pdfTitle, language.name);
+                    generateAssessmentPDF(questions[0], questions[1].title, language.name);
 
                     // Show toast notification for successful download
                     toast.success('Assessment successfully downloaded!', {
