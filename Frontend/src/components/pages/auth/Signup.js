@@ -32,8 +32,8 @@ const theme = createTheme({
             paper: "#1e293b", // Slate-800
         },
         text: {
-            primary: "#f1f5f9", // Slate-100
-            secondary: "#94a3b8", // Slate-400
+            primary: "#ffffff", // Slate-100
+            secondary: "#ffffff", // Slate-400
         },
         error: {
             main: "#ef4444", // Red-500
@@ -55,10 +55,10 @@ const theme = createTheme({
                         },
                     },
                     '& .MuiInputLabel-root': {
-                        color: '#94a3b8',
+                        color: '#ffffff',
                     },
                     '& .MuiInputBase-input': {
-                        color: '#f1f5f9',
+                        color: '#ffffff',
                     },
                 },
             },
@@ -224,6 +224,13 @@ const Signup = () => {
                                         </InputAdornment>
                                     ),
                                 }}
+                                sx={{ 
+                                    fontWeight: "bold",
+                                    background: "linear-gradient(to right, #22d3ee, #6366f1)",
+                                    backgroundClip: "text",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "#fff",
+                                }}
                             />
                             <TextField
                                 variant="outlined"
@@ -245,6 +252,13 @@ const Signup = () => {
                                         </InputAdornment>
                                     ),
                                 }}
+                                sx={{ 
+                                    fontWeight: "bold",
+                                    background: "linear-gradient(to right, #22d3ee, #6366f1)",
+                                    backgroundClip: "text",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "#fff",
+                                }}
                             />
                             <TextField
                                 variant="outlined"
@@ -265,6 +279,13 @@ const Signup = () => {
                                             <Lock size={20} color="#22d3ee" />
                                         </InputAdornment>
                                     ),
+                                }}
+                                sx={{ 
+                                    fontWeight: "bold",
+                                    background: "linear-gradient(to right, #22d3ee, #6366f1)",
+                                    backgroundClip: "text",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "#fff",
                                 }}
                             />
                             <TextField
@@ -289,6 +310,13 @@ const Signup = () => {
                                             <KeyRound size={20} color="#22d3ee" />
                                         </InputAdornment>
                                     ),
+                                }}
+                                sx={{ 
+                                    fontWeight: "bold",
+                                    background: "linear-gradient(to right, #22d3ee, #6366f1)",
+                                    backgroundClip: "text",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "#fff",
                                 }}
                             />
                             {error && (

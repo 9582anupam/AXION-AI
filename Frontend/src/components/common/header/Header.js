@@ -44,30 +44,30 @@ const Header = () => {
         <nav className="bg-slate-950/90 backdrop-blur-sm sticky top-0 z-50 border-b border-cyan-900/30">
         <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <div onClick={()=>{navigate("/")}} className="flex items-center cursor-pointer">
                 <Brain className="h-8 w-8 text-cyan-400" />
                 <span className="ml-2 text-xl font-bold bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
-                Harmoni-AI
+                AxionAI
                 </span>
             </div>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-8">
-                <Link to="#about" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                About
+                <Link to="/" className="text-slate-300 hover:text-cyan-400 transition-colors">
+                Home
                 </Link>
                 <Link to="/generatequiz" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                Generate Quiz
+                Start Learning
                 </Link>
-                <Link to="#features" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                Features
+                <Link to="/exploreQuiz" className="text-slate-300 hover:text-cyan-400 transition-colors">
+                Explore More
                 </Link>
-                <Link to="#audience" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                For Who
+                <Link to="/leaderboard" className="text-slate-300 hover:text-cyan-400 transition-colors">
+                Leaderboard
                 </Link>
-                <Link to="#rewards" className="text-slate-300 hover:text-cyan-400 transition-colors">
+                {/* <Link to="#rewards" className="text-slate-300 hover:text-cyan-400 transition-colors">
                 Rewards
-                </Link>
+                </Link> */}
             </div>
 
             {/* Mobile Menu Button */}

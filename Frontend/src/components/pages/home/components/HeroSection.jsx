@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
 
 const HeroSection = () => {
     const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
     const [headRotation, setHeadRotation] = useState({ x: 0, y: 0 });
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -47,18 +50,23 @@ const HeroSection = () => {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full filter blur-3xl animate-pulse z-0" style={{ animationDelay: '2s' }}></div>
         
         <div className="container mx-auto px-6 relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-indigo-500 leading-tight">
-                Transform Any Content into Engaging Assessments with AI
+                Learn Smarter, Not Harder
             </h1>
             <p className="text-xl md:text-2xl text-slate-300 mb-10">
-                Generate interactive quizzes and assessments from videos, text, and more
+                Transform videos, PDFs and lectures into interactive learning tools and assessments
             </p>
-            <button className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-bold rounded-full shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transform transition-all hover:scale-100 flex items-center mx-auto">
-                Start Generating Assessments
-                <ArrowRight className="ml-2 h-5 w-5" />
-            </button>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <button 
+                onClick={() => navigate("/generatequiz")}
+                className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-full shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transform transition-all hover:scale-105 flex items-center mx-auto"
+                >
+                Start Learning
+                <BookOpen className="ml-2 h-5 w-5" />
+                </button>
             </div>
+        </div>
             
             {/* Interactive Robot */}
             <div className="mt-16 flex justify-center">

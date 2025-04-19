@@ -7,6 +7,12 @@ const QuestionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    //so that i can dynamically show input on the frontend side.
+    type: {
+        type: String,
+        enum: ["MCQ", "TF", "SHORT_ANSWER", "LONG_ANSWER", "ESSAY", "FILL_IN_BLANK", "MATCHING", "ASSERTION_REASONING"],
+        default: "MCQ"
+    },
     question: {
         type: String,
         required: true,
@@ -60,7 +66,7 @@ const assessmentSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["MCQ", "TF", "SHORT_ANSWER", "ESSAY", "FILL_IN_BLANK", "MATCHING"],
+        enum: ["MCQ", "TF", "SHORT_ANSWER", "LONG_ANSWER", "ESSAY", "FILL_IN_BLANK", "MATCHING", "ASSERTION_REASONING", "MIX"],
         default: "MCQ"
     },
     difficulty: {
@@ -68,18 +74,17 @@ const assessmentSchema = new mongoose.Schema({
         enum: ["easy", "medium", "hard"],
         default: "medium"
     },
+    assessmentLang: {
+        type: String,
+        default: "english",
+        trim: true
+    },
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
     questions: {
-        type: [QuestionSchema],
-        validate: {
-            validator: function (questions) {
-                return questions.length > 0;
-            },
-            message: "Assessment must have at least one question"
-        }
+        type: [QuestionSchema]
     },
     // metadata: {
     //     type: MetadataSchema,
@@ -96,6 +101,10 @@ const assessmentSchema = new mongoose.Schema({
     attemptedBy: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: "User"
+    },
+    transcript: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
 

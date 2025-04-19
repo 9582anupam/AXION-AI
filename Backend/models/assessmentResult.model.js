@@ -24,6 +24,14 @@ const QuestionAnswerSchema = new mongoose.Schema({
         type: Boolean,
         required: true
     },
+    feedback: {
+        type: String,
+        default: null
+    },
+    ansScore: {
+        type:Number,
+        default: 0 // i don't know wether to put null or NAN
+    }
 }, { _id: false });
 
 // Main assessment result schema

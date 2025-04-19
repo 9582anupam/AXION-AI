@@ -33,8 +33,8 @@ const theme = createTheme({
             paper: "#1e293b", // Slate-800
         },
         text: {
-            primary: "#f1f5f9", // Slate-100
-            secondary: "#94a3b8", // Slate-400
+            primary: "#fff", // Slate-100
+            secondary: "#fff", // Slate-400
         },
         error: {
             main: "#ef4444", // Red-500
@@ -56,10 +56,10 @@ const theme = createTheme({
                         },
                     },
                     '& .MuiInputLabel-root': {
-                        color: '#94a3b8',
+                        color: '#ffffff',
                     },
                     '& .MuiInputBase-input': {
-                        color: '#f1f5f9',
+                        color: '#ffffff',
                     },
                 },
             },
@@ -166,7 +166,7 @@ function Login() {
 
     return (
         <ThemeProvider theme={theme}>
-            <div className="h-[calc(100svh-5rem)] flex justify-center items-center bg-slate-950">
+            <div className="h-[calc(100svh-5rem)] flex justify-center items-center bg-slate-950 text-white">
                 <Container component="main" maxWidth="xs" className="relative">
                     <StyledPaper elevation={3}>
                         <div className="flex items-center w-full relative">
@@ -188,7 +188,7 @@ function Login() {
                                     background: "linear-gradient(to right, #22d3ee, #6366f1)",
                                     backgroundClip: "text",
                                     WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
+                                    WebkitTextFillColor: "#fff",
                                 }}>
                                 Login
                             </Typography>
@@ -214,9 +214,16 @@ function Login() {
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
-                                            <Mail size={20} color="#22d3ee" />
+                                            <Mail size={20} color="#ffffff"/>
                                         </InputAdornment>
                                     ),
+                                }}
+                                sx={{ 
+                                    fontWeight: "bold",
+                                    background: "linear-gradient(to right, #22d3ee, #6366f1)",
+                                    backgroundClip: "text",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "#fff",
                                 }}
                             />
                             <TextField
@@ -239,6 +246,13 @@ function Login() {
                                             <Lock size={20} color="#22d3ee" />
                                         </InputAdornment>
                                     ),
+                                }}
+                                sx={{ 
+                                    fontWeight: "bold", 
+                                    background: "linear-gradient(to right, #22d3ee, #6366f1)",
+                                    backgroundClip: "text",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "#fff",
                                 }}
                             />
                             {error && (

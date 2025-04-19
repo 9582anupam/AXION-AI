@@ -1,1 +1,1 @@
-export const DB_NAME = "Harmoni-AI";
+export const DB_NAME = "Axion-AI";
