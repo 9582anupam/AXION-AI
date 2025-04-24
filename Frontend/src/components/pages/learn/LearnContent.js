@@ -195,10 +195,14 @@ export const LearnContent = () => {
                             )
                         }
 
+
+
+
+
                     </div>
 
                     {/* Right column - Interactive tools */}
-                    <div className="bg-slate-850 rounded-2xl overflow-hidden border border-slate-700 shadow-xl flex flex-col h-full">
+                    <div className="bg-slate-850 rounded-2xl overflow-hidden border border-slate-700 shadow-xl flex flex-col h-[calc(100vh-150px)]">
                         {/* Tab navigation - Reordered tabs */}
                         <div className="bg-slate-800/50 border-b border-slate-700">
                             <div className="flex overflow-x-auto p-2 space-x-2">

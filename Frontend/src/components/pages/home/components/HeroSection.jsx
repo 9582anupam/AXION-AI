@@ -52,7 +52,11 @@ const HeroSection = () => {
         <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-indigo-500 leading-tight">
+<<<<<<< HEAD
                 Learn Smarter, Not Harder with AI
+=======
+                Learn Smarter, Not Harder
+>>>>>>> 84f6d69cd7acc67212b8dba62d4565c63e245ac0
             </h1>
             <p className="text-xl md:text-2xl text-slate-300 mb-10">
                 Transform videos, PDFs and lectures into interactive learning tools and assessments

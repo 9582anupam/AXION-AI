@@ -48,6 +48,7 @@ git clone https://github.com/yourusername/Axion-AI.git
 cd Axion-AI
 ```
 
+<<<<<<< HEAD
 2. Install dependencies for both frontend and backend
 ```bash
 # Install Backend dependencies
@@ -89,3 +90,115 @@ npm start
 
 ## Acknowledgments
 - [Include any acknowledgments here]
+=======
+2. Frontend Setup
+```bash
+cd Frontend
+npm install
+```
+
+3. Backend Setup
+```bash
+cd Backend
+npm install
+```
+
+4. Environment Variables
+Create .env file in Backend directory with:
+```
+PORT=5000
+MONGODB_URL=your_mongodb_uri
+NODE_ENV=development
+CORS_ORIGIN=*
+ACCESS_TOKEN_SECRET=your_access_token_secret
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
+REFRESH_TOKEN_EXPIRY=10d
+GEMINI_API_KEY=your_gemini_api_key
+ASSEMBLY_API_KEY=your_assembly_api_key
+OCR_API_KEY=your_ocr_api_key
+```
+
+5. Start Backend Server
+```bash
+cd Backend
+npm start
+```
+
+6. Start Frontend
+```bash
+cd Frontend
+npm start
+```
+
+### Chrome Extension Setup
+1. Navigate to the extension directory
+```bash
+cd filter
+```
+
+2. Build the extension (if needed)
+```bash
+npm install
+npm run build
+```
+
+3. Load the extension in Chrome:
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" in the top right
+   - Click "Load unpacked" and select the `/filter` directory
+   - The Axion-AI extension icon should appear in your browser toolbar
+
+## API Endpoints
+
+### Authentication
+- `POST /api/v1/users/register` - Register a new user
+- `POST /api/v1/users/login` - Login and get tokens
+- `POST /api/v1/users/refresh-token` - Refresh access token
+- `GET /api/v1/users/profile` - Get user profile
+
+### Assessment Generation
+- `POST /api/v1/assessmentGenerate/youtube` - Generate Assessment from YouTube video
+- `POST /api/v1/assessmentGenerate/media` - Generate Assessment from audio/video file
+- `POST /api/v1/assessmentGenerate/document` - Generate Assessment from PDF/PPT
+
+### Assessment Management
+- `GET /api/v1/exploreAssessment/all` - Get all assessments
+- `GET /api/v1/exploreAssessment/search` - Search assessments
+- `POST /api/v1/assessmentResult/:assessmentId/submit` - Submit assessment answers
+- `GET /api/v1/assessmentResult/user` - Get user's assessment results
+
+### Chatbot
+- `POST /api/v1/chatbot/ask-assessment/:assessmentId` - Ask questions about an assessment
+
+## Using the Chrome Extension
+
+1. **Installation**: After loading the extension, click the Axion-AI icon in your browser toolbar
+2. **Open Youtube Video**: There will be a panel on right side of video with quick features.
+
+## Features in Development
+- Educator Login
+- Progressive Web App
+- Multilingual Support
+- Real-time collaborative Assessment taking
+- Enhanced analytics dashboard
+- Mobile application
+- Mix Assessment templates
+- More assessment types (coding exercises, etc.)
+- LMS integration
+- Extension support for more browsers (Firefox, Edge, Safari)
+
+## Contributing
+
+To contribute to Axion-AI:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+>>>>>>> 84f6d69cd7acc67212b8dba62d4565c63e245ac0

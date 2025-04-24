@@ -12,7 +12,7 @@ export const checkUserAnswer = async (assessment, answers) => {
       assessment.type === "ESSAY" ||
       assessment.type === "FILL_IN_BLANK"
     ) {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
       const userAnswersStr = answers
         .map(

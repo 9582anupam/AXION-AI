@@ -19,12 +19,79 @@ import DownloadInfo from './components/DownloadInfo';
 import ErrorMessage from './components/ErrorMessage';
 import LoadingOverlay from './components/LoadingOverlay';
 import { FileText, Youtube, Video, Music } from "lucide-react";
+import { fetchLearnData } from "../../../../services/learn/learnService";
 
 const GenerateQuiz = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
     // Input Types definition - Move this BEFORE the useEffect that uses it
+
+
+    const difficultyLevels = [
+        { id: "easy", name: "Easy" },
+        { id: "medium", name: "Medium " },
+        { id: "hard", name: "Hard" }
+    ];
+
+    const questionCounts = [
+        { id: "5", name: "5 Questions" },
+        { id: "10", name: "10 Questions" }
+    ];
+
+    const questionTypes = [
+        { id: "MCQ", name: "Multiple Choice Questions" },
+        { id: "TF", name: "True/False Questions" },
+        { id: "ASSERTION_REASONING", name: "Assertion and Reasoning Questions" },
+        { id: "SHORT_ANSWER", name: "Short Answer Questions" },
+        { id: "LONG_ANSWER", name: "Long Answer Questions" },
+        { id: "ESSAY", name: "Essay Questions" },
+        { id: "FILL_IN_BLANK", name: "Fill in the Blank Questions" },
+        { id: "MATCHING", name: "Matching Questions" }
+    ];
+
+    // create object woth below values and id as above
+    // "English", 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'
+    const languageOptions = [
+        { id: "English", name: "English" },
+        { id: "Hindi", name: "Hindi" },
+        { id: "Tamil", name: "Tamil" },
+        // { id: "Telugu", name: "Telugu" },
+        // { id: "Kannada", name: "Kannada" },
+        { id: "Malayalam", name: "Malayalam" },
+        // { id: "Bengali", name: "Bengali" },
+        // { id: "Marathi", name: "Marathi" },
+        // { id: "Gujarati", name: "Gujarati" },
+        // { id: "Punjabi", name: "Punjabi" }
+    ]
+    // State management
+
+    const [selectedInput, setSelectedInput] = useState(null);
+    const [language, setLanguage] = useState(languageOptions[0]);
+    const [file, setFile] = useState(null);
+    const [inputValue, setInputValue] = useState("");
+    const [error, setError] = useState("");
+    const [difficulty, setDifficulty] = useState(difficultyLevels[0]);
+    const [questionCount, setQuestionCount] = useState(questionCounts[0]);
+    const [questionType, setQuestionType] = useState(questionTypes[0]);
+    const [loading, setLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const [cloudinaryUrl, setCloudinaryUrl] = useState(null);
+    const [cloudinaryData, setCloudinaryData] = useState(null);
+    const [showOptionsStep, setShowOptionsStep] = useState(false);
+    const [assessmentAction, setAssessmentAction] = useState(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isLearning, setIsLearning] = useState(false);
+
+
+    console.log(selectedInput);
+    console.log(inputValue)
+
+    const fileInputRef = useRef(null);
+
+
+    // Input Types definition
     const inputTypes = [
         {
             id: "youtube",
@@ -79,53 +146,7 @@ const GenerateQuiz = () => {
         },
     ];
 
-    const difficultyLevels = [
-        { id: "easy", name: "Easy" },
-        { id: "medium", name: "Medium " },
-        { id: "hard", name: "Hard" }
-    ];
 
-    const questionCounts = [
-        { id: "5", name: "5 Questions" },
-        { id: "10", name: "10 Questions" }
-    ];
-
-    const questionTypes = [
-        { id: "MCQ", name: "Multiple Choice Questions" },
-        { id: "TF", name: "True/False Questions" },
-        { id: "ASSERTION_REASONING", name: "Assertion and Reasoning Questions" },
-        { id: "SHORT_ANSWER", name: "Short Answer Questions" },
-        { id: "LONG_ANSWER", name: "Long Answer Questions" },
-        { id: "ESSAY", name: "Essay Questions" },
-        { id: "FILL_IN_BLANK", name: "Fill in the Blank Questions" },
-        { id: "MATCHING", name: "Matching Questions" }
-    ];
-
-    const languageOptions = [
-        { id: "English", name: "English" },
-        { id: "Hindi", name: "Hindi" },
-        { id: "Tamil", name: "Tamil" },
-        { id: "Malayalam", name: "Malayalam" }
-    ];
-
-    // State management - Ensure all initial states have safe default values
-    const [selectedInput, setSelectedInput] = useState(null);
-    const [language, setLanguage] = useState(languageOptions[0]);
-    const [file, setFile] = useState(null);
-    const [inputValue, setInputValue] = useState("");
-    const [error, setError] = useState("");
-    const [difficulty, setDifficulty] = useState(difficultyLevels[0]);
-    const [questionCount, setQuestionCount] = useState(questionCounts[0]);
-    const [questionType, setQuestionType] = useState(questionTypes[0]);
-    const [loading, setLoading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [isUploading, setIsUploading] = useState(false);
-    const [cloudinaryUrl, setCloudinaryUrl] = useState(null);
-    const [cloudinaryData, setCloudinaryData] = useState(null);
-    const [showOptionsStep, setShowOptionsStep] = useState(false);
-    const [assessmentAction, setAssessmentAction] = useState(null);
-    const [isDownloading, setIsDownloading] = useState(false);
-    const [isLearning, setIsLearning] = useState(false);
 
     // Check if coming from learn page
     const [fromLearn, setFromLearn] = useState(false);
@@ -185,7 +206,6 @@ const GenerateQuiz = () => {
         }
     }, [location.state]);
 
-    const fileInputRef = useRef(null);
 
     // Event handlers
     const handleInputTypeSelect = (inputType) => {

@@ -153,7 +153,7 @@ const QuizAttempt = () => {
                         {(() => {
                             const type = currentQuestion.type
 
-                            if (type === "MCQ" || type === "TF") {
+                            if (type === "MCQ" || type === "TF" || type === "ASSERTION_REASONING") {
                                 return currentQuestion.options.map((option, index) => {
                                     const isSelected = selectedOptions[currentQuestion.id] === option
                                     return (
