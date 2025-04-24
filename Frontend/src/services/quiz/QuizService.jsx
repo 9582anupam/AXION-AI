@@ -11,13 +11,13 @@ const userAxiosInstance4 = userAuthenticatedAxiosInstance(
     "/api/v1/exploreAssessment"
 );
 
-
 const generateQuizFromYoutube = async (
     videoUrl,
     numberOfQuestions = 5,
     difficulty = "medium",
     type = "MCQ",
-    language
+    language,
+    learnId = null
 ) => {
     console.log(language)
     try {
@@ -26,7 +26,8 @@ const generateQuizFromYoutube = async (
             numberOfQuestions,
             difficulty,
             type,
-            language
+            language,
+            learnId
         });
         return response.data;
     } catch (error) {
@@ -43,8 +44,9 @@ const generateQuizFromMediaUrl = async (
     numberOfQuestions = 5,
     difficulty = "medium",
     type = "MCQ",
-    language ,
-    options = {}
+    language,
+    options = {},
+    learnId = null
 ) => {
     const { 
         deleteAfterProcessing = false, 
@@ -61,7 +63,8 @@ const generateQuizFromMediaUrl = async (
             language,
             deleteAfterProcessing,
             cloudinaryPublicId,
-            resourceType
+            resourceType,
+            learnId
         });
         return response.data;
     } catch (error) {
@@ -73,17 +76,13 @@ const generateQuizFromMediaUrl = async (
 /**
  * Generate quiz from media file with Cloudinary pre-upload
  */
-
-
-
-
 const generateQuizFromMedia = async (
     file,
     numberOfQuestions = 5,
     difficulty = "medium",
     language = "English",
     type = "MCQ",
-    
+    learnId = null
 ) => {
     try {
         // Always use Cloudinary approach - no fallback to local
@@ -115,7 +114,8 @@ const generateQuizFromMedia = async (
                 deleteAfterProcessing: true,
                 cloudinaryPublicId: cloudinaryResult.public_id,
                 resourceType: cloudinaryResult.resource_type || resourceType
-            }
+            },
+            learnId
         );
     } catch (error) {
         console.error("Error generating quiz:", error);
@@ -132,8 +132,8 @@ const generateQuizFromDocumentUrl = async (
     difficulty = "medium",
     language,
     type = "MCQ",
-    
-    options = {}
+    options = {},
+    learnId = null
 ) => {
     const { 
         deleteAfterProcessing = false, 
@@ -150,7 +150,8 @@ const generateQuizFromDocumentUrl = async (
             type,
             deleteAfterProcessing,
             cloudinaryPublicId,
-            resourceType
+            resourceType,
+            learnId
         });
         return response.data;
     } catch (error) {
@@ -167,18 +168,39 @@ const generateQuizFromDocument = async (
     numberOfQuestions = 5,
     difficulty = "medium",
     type = "MCQ",
-    language
+    language,
+    learnId = null
 ) => {
     try {
+        // Check if file is null (this can happen when coming from learn content)
+        if (!file && learnId) {
+            // If we have a learnId but no file, we should use the learnId directly
+            console.log('No document file provided, using learnId directly');
+            
+            const response = await userAxiosInstance1.post(`/learnId/${learnId}`, {
+                numberOfQuestions,
+                difficulty,
+                type,
+                language
+            });
+            
+            return response.data;
+        }
+        
+        // Validate file existence before proceeding
+        if (!file) {
+            throw new Error("No document file provided");
+        }
+        
         // Upload document to Cloudinary first
         console.log('Preparing document upload to Cloudinary...');
         
         // Dynamically import to avoid bundling issues
         const { uploadToCloudinary } = await import('../../utils/cloudinaryUtils');
         
-        // Upload to Cloudinary as auto resourceType
+        // Upload to Cloudinary as auto resourceType - Add null check before accessing file properties
         console.log(`Uploading ${file.name} (${file.size} bytes) to Cloudinary...`);
-        
+
         const cloudinaryResult = await uploadToCloudinary(file, {
             folder: 'assessments/documents',
             resourceType: 'auto'
@@ -198,7 +220,8 @@ const generateQuizFromDocument = async (
                 deleteAfterProcessing: true,
                 cloudinaryPublicId: cloudinaryResult.public_id,
                 resourceType: cloudinaryResult.resource_type || 'raw'
-            }
+            },
+            learnId
         );
     } catch (error) {
         console.error("Error generating quiz from document:", error);
@@ -290,5 +313,5 @@ export {
     fetchQuizData,
     askAssessment,
     getAllAssessments,
-    searchAssessments,
+    searchAssessments
 };

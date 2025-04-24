@@ -37,7 +37,8 @@ export const saveAssessment = async (assessmentData, sourceInfo, options = {}) =
       assessmentLang: sourceInfo.language || 'english',
       tags: assessmentData[1].tags || assessmentData[1].metadata.tags || [sourceInfo.difficulty, sourceInfo.type],
       isPublic: true,
-      transcript: sourceInfo.transcript
+      transcript: sourceInfo.transcript,
+      learnId: sourceInfo.learnId || null,
     });
     
     // Save to database

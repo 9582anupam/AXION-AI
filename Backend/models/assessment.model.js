@@ -105,6 +105,11 @@ const assessmentSchema = new mongoose.Schema({
     transcript: {
         type: String,
         default: null
+    },
+    learnId: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "Learn",
+        default: null
     }
 }, { timestamps: true });
 

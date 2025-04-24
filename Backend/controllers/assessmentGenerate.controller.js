@@ -13,12 +13,14 @@ import { extractTextFromPdfFile } from '../helper/pdfToText.js';
 import { extractTextFromPptFile } from '../helper/pptToText.js';
 import { saveAssessment } from '../helper/saveAssessment.js';
 import User from "../models/user.model.js";
+import Learn from "../models/learn.model.js";
 import { uploadBufferToCloudinary } from '../helper/cloudinaryHelper.js';
 import { console } from 'inspector';
 // Import new helper functions
 import extractYouTubeTranscript from '../helper/extractYouTubeTranscript.js';
 import extractMediaTranscript from '../helper/extractMediaTranscript.js';
 import extractDocumentText from '../helper/extractDocumentText.js';
+
 
 // Setup paths
 const __filename = fileURLToPath(import.meta.url);
@@ -475,6 +477,118 @@ const generateAssessmentFromDocumentUrl = async (req, res) => {
     }
 };
 
+
+const generateAssessmentFromLearn = async (req, res) => {
+    try {
+        const { numberOfQuestions = 5, difficulty = 'medium', type = 'MCQ', language = 'English' } = req.body;
+        const { learnId } = req.params;
+
+        if (!learnId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Learn ID is required'
+            });
+        }
+
+        // Fetch learn content from the database
+        const learnContent = await Learn.findById(learnId).lean();
+        
+        if (!learnContent) {
+            return res.status(404).json({
+                success: false,
+                message: 'Learn content not found'
+            });
+        }
+
+        // Get the transcript or content to use for assessment generation
+        // First try to use the transcript, then notes, then summary as fallback
+        const contentToUse = learnContent.transcript || 
+                             learnContent.notes || 
+                             learnContent.summary || 
+                             '';
+
+        if (!contentToUse) {
+            return res.status(400).json({
+                success: false,
+                message: 'No content available to generate assessment'
+            });
+        }
+
+        // Generate assessment from the learn data
+        const assessmentJson = await generateAssessmentPromptCall(contentToUse, type, numberOfQuestions, difficulty, language);
+
+        // Parse result
+        let assessment;
+        try {
+            const match = assessmentJson.match(/\[[\s\S]*\]/); 
+            assessment = match ? JSON.parse(match[0]) : JSON.parse(assessmentJson);
+        } catch (error) {
+            console.error('Failed to parse assessment JSON:', error);
+            assessment = { rawResponse: assessmentJson };
+        }
+
+        // Save to database if user ID is available
+        let savedAssessment = null;
+        const userId = req.user?._id;
+
+        try {
+            // For learn content, use content title and metadata
+            const title = learnContent.title || `Learn Content Assessment`;
+
+            savedAssessment = await saveAssessment(
+                assessment,
+                {
+                    type,
+                    difficulty,
+                    language,
+                    source: 'learn',
+                    learnId: learnId,
+                    contentType: learnContent.contentType
+                },
+                {
+                    userId,
+                    title,
+                    description: `Assessment based on ${learnContent.contentType || 'learning'} content: ${title}`
+                }
+            );
+
+            // Add assessment to user's created assessments
+            if (userId) {
+                await User.findByIdAndUpdate(
+                    userId,
+                    { $addToSet: { assessmentCreated: savedAssessment._id } }
+                );
+            }
+        } catch (dbError) {
+            console.error('Failed to save to database:', dbError);
+            // Continue even if database save fails
+        }
+
+        res.status(200).json({
+            success: true,
+            learnId,
+            assessment,
+            metadata: { 
+                type, 
+                difficulty, 
+                questionCount: numberOfQuestions,
+                title: learnContent.title,
+                contentType: learnContent.contentType
+            },
+            ...(savedAssessment && { assessmentId: savedAssessment._id })
+        });
+
+    } catch (error) {
+        console.error('Error generating assessment from Learn:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error generating assessment',
+            error: error.message
+        });
+    }
+};
+
+
 /**
  * Helper function to delete media from Cloudinary
  * @param {string} publicId - The Cloudinary public ID to delete
@@ -520,6 +634,7 @@ export {
     generateAssessmentFromMediaUrl,
     generateAssessmentFromDocument,
     generateAssessmentFromDocumentUrl,
+    generateAssessmentFromLearn,
     mediaFields,
     documentFields,
     mediaUpload,

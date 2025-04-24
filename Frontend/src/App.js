@@ -15,7 +15,7 @@ import QuizResults from "./components/pages/quiz/QuizResults";
 import ExploreQuiz from "./components/pages/quiz/ExploreQuiz";
 import LeaderBoard from "./components/pages/quiz/LeaderBoard";
 import ViewQuiz from "./components/pages/quiz/ViewQuiz";
-import { LearnContent } from "./components/pages/learn/LearnContent";
+import LearnContent from "./components/pages/learn/LearnContent";
 
 function App() {
 

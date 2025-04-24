@@ -5,6 +5,7 @@ import {
     generateAssessmentFromDocument,
     generateAssessmentFromMediaUrl,
     generateAssessmentFromDocumentUrl,
+    generateAssessmentFromLearn,
     mediaFields,
     documentFields,
     mediaUpload,
@@ -74,6 +75,11 @@ router.post("/document-url", verifyJWT, generateAssessmentFromDocumentUrl);
  * @route GET /api/v1/assessmentGenerate/upload-help
  * @desc Get help information for media upload endpoints
  */
+
+
+router.post("/learnId/:learnId", verifyJWT, generateAssessmentFromLearn);
+
+
 router.get("/upload-help", (req, res) => {
     res.status(200).json({
         message: "Media upload guide",

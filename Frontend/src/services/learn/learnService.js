@@ -40,6 +40,7 @@ export const getFlashes = async (learnId) => {
 export const getNotes = async (learnId) => {
   try {
     const response = await userAxiosInstance.post("/generateNotes", { learnId });
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching notes:", error);

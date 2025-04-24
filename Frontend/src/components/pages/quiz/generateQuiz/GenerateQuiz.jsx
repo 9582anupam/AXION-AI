@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
     generateQuizFromYoutube,
     generateQuizFromMedia,
@@ -19,75 +19,12 @@ import DownloadInfo from './components/DownloadInfo';
 import ErrorMessage from './components/ErrorMessage';
 import LoadingOverlay from './components/LoadingOverlay';
 import { FileText, Youtube, Video, Music } from "lucide-react";
-import { fetchLearnData } from "../../../../services/learn/learnService";
-
 
 const GenerateQuiz = () => {
     const navigate = useNavigate();
-    const difficultyLevels = [
-        { id: "easy", name: "Easy" },
-        { id: "medium", name: "Medium " },
-        { id: "hard", name: "Hard" }
-    ];
+    const location = useLocation();
 
-    const questionCounts = [
-        { id: "5", name: "5 Questions" },
-        { id: "10", name: "10 Questions" }
-    ];
-
-    const questionTypes = [
-        { id: "MCQ", name: "Multiple Choice Questions" },
-        { id: "TF", name: "True/False Questions" },
-        { id: "ASSERTION_REASONING", name: "Assertion and Reasoning Questions" },
-        { id: "SHORT_ANSWER", name: "Short Answer Questions" },
-        { id: "LONG_ANSWER", name: "Long Answer Questions" },
-        { id: "ESSAY", name: "Essay Questions" },
-        { id: "FILL_IN_BLANK", name: "Fill in the Blank Questions" },
-        { id: "MATCHING", name: "Matching Questions" }
-    ];
-
-    // create object woth below values and id as above
-    // "English", 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'
-    const languageOptions = [
-        { id: "English", name: "English" },
-        { id: "Hindi", name: "Hindi" },
-        { id: "Tamil", name: "Tamil" },
-        // { id: "Telugu", name: "Telugu" },
-        // { id: "Kannada", name: "Kannada" },
-        { id: "Malayalam", name: "Malayalam" },
-        // { id: "Bengali", name: "Bengali" },
-        // { id: "Marathi", name: "Marathi" },
-        // { id: "Gujarati", name: "Gujarati" },
-        // { id: "Punjabi", name: "Punjabi" }
-    ]
-    // State management
-
-    const [selectedInput, setSelectedInput] = useState(null);
-    const [language, setLanguage] = useState(languageOptions[0]);
-    const [file, setFile] = useState(null);
-    const [inputValue, setInputValue] = useState("");
-    const [error, setError] = useState("");
-    const [difficulty, setDifficulty] = useState(difficultyLevels[0]);
-    const [questionCount, setQuestionCount] = useState(questionCounts[0]);
-    const [questionType, setQuestionType] = useState(questionTypes[0]);
-    const [loading, setLoading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [isUploading, setIsUploading] = useState(false);
-    const [cloudinaryUrl, setCloudinaryUrl] = useState(null);
-    const [cloudinaryData, setCloudinaryData] = useState(null);
-    const [showOptionsStep, setShowOptionsStep] = useState(false);
-    const [assessmentAction, setAssessmentAction] = useState(null);
-    const [isDownloading, setIsDownloading] = useState(false);
-    const [isLearning, setIsLearning] = useState(false);
-
-
-    console.log(selectedInput);
-    console.log(inputValue)
-
-    const fileInputRef = useRef(null);
-
-
-    // Input Types definition
+    // Input Types definition - Move this BEFORE the useEffect that uses it
     const inputTypes = [
         {
             id: "youtube",
@@ -142,6 +79,113 @@ const GenerateQuiz = () => {
         },
     ];
 
+    const difficultyLevels = [
+        { id: "easy", name: "Easy" },
+        { id: "medium", name: "Medium " },
+        { id: "hard", name: "Hard" }
+    ];
+
+    const questionCounts = [
+        { id: "5", name: "5 Questions" },
+        { id: "10", name: "10 Questions" }
+    ];
+
+    const questionTypes = [
+        { id: "MCQ", name: "Multiple Choice Questions" },
+        { id: "TF", name: "True/False Questions" },
+        { id: "ASSERTION_REASONING", name: "Assertion and Reasoning Questions" },
+        { id: "SHORT_ANSWER", name: "Short Answer Questions" },
+        { id: "LONG_ANSWER", name: "Long Answer Questions" },
+        { id: "ESSAY", name: "Essay Questions" },
+        { id: "FILL_IN_BLANK", name: "Fill in the Blank Questions" },
+        { id: "MATCHING", name: "Matching Questions" }
+    ];
+
+    const languageOptions = [
+        { id: "English", name: "English" },
+        { id: "Hindi", name: "Hindi" },
+        { id: "Tamil", name: "Tamil" },
+        { id: "Malayalam", name: "Malayalam" }
+    ];
+
+    // State management - Ensure all initial states have safe default values
+    const [selectedInput, setSelectedInput] = useState(null);
+    const [language, setLanguage] = useState(languageOptions[0]);
+    const [file, setFile] = useState(null);
+    const [inputValue, setInputValue] = useState("");
+    const [error, setError] = useState("");
+    const [difficulty, setDifficulty] = useState(difficultyLevels[0]);
+    const [questionCount, setQuestionCount] = useState(questionCounts[0]);
+    const [questionType, setQuestionType] = useState(questionTypes[0]);
+    const [loading, setLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const [cloudinaryUrl, setCloudinaryUrl] = useState(null);
+    const [cloudinaryData, setCloudinaryData] = useState(null);
+    const [showOptionsStep, setShowOptionsStep] = useState(false);
+    const [assessmentAction, setAssessmentAction] = useState(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isLearning, setIsLearning] = useState(false);
+
+    // Check if coming from learn page
+    const [fromLearn, setFromLearn] = useState(false);
+    const [learnId, setLearnId] = useState(null);
+
+    // Add a dummy default input for when no input is selected but we need to render components
+    // that expect selectedInput to exist
+    const defaultInput = {
+        id: "default",
+        name: "Default Input",
+        description: "Default input type",
+        icon: null,
+        placeholder: "",
+        acceptsFile: false
+    };
+
+    // Set up component based on navigation state
+    useEffect(() => {
+        if (location.state?.fromLearn && location.state?.learnId) {
+            // Set basic state for learn mode
+            setFromLearn(true);
+            setLearnId(location.state.learnId);
+            setShowOptionsStep(true);
+
+            try {
+                if (location.state.contentType) {
+                    const contentType = location.state.contentType;
+                    let matchedInput = null;
+
+                    // Find matching input type
+                    if (contentType === 'youtube') {
+                        matchedInput = inputTypes.find(input => input.id === 'youtube');
+                        setInputValue(location.state.contentUrl || "");
+                    } else if (contentType === 'document') {
+                        matchedInput = inputTypes.find(input => input.id === 'document');
+                    } else if (contentType === 'video' || contentType === 'mp4-local') {
+                        matchedInput = inputTypes.find(input => input.id === 'mp4-local');
+                    } else if (contentType === 'audio' || contentType === 'mp3-local') {
+                        matchedInput = inputTypes.find(input => input.id === 'mp3-local');
+                    }
+
+                    // Safely set selected input with fallback
+                    setSelectedInput(matchedInput || inputTypes[0] || defaultInput);
+
+                    if (location.state.contentUrl) {
+                        setCloudinaryUrl(location.state.contentUrl);
+                    }
+                } else {
+                    // If no content type, use the first input type
+                    setSelectedInput(inputTypes[0] || defaultInput);
+                }
+            } catch (err) {
+                console.error("Error setting up from learn:", err);
+                // Set a default input type as fallback
+                setSelectedInput(defaultInput);
+            }
+        }
+    }, [location.state]);
+
+    const fileInputRef = useRef(null);
 
     // Event handlers
     const handleInputTypeSelect = (inputType) => {
@@ -173,7 +217,6 @@ const GenerateQuiz = () => {
         const selectedFile = e.target.files[0];
 
         if (selectedFile) {
-            // Check file size (100MB limit for media files, 25MB for documents)
             const maxSize = selectedInput.id === "document" ? 25 * 1024 * 1024 : 100 * 1024 * 1024;
             if (selectedFile.size > maxSize) {
                 setError(`File size exceeds ${selectedInput.id === "document" ? "25MB" : "100MB"} limit`);
@@ -185,37 +228,29 @@ const GenerateQuiz = () => {
             setError("");
             setCloudinaryUrl(null);
 
-            // If it's a media file and not a document, upload to Cloudinary immediately
             if ((selectedInput.id === "mp4-local" || selectedInput.id === "mp3-local") &&
                 process.env.REACT_APP_USE_CLOUDINARY === "true") {
                 try {
                     setIsUploading(true);
                     setUploadProgress(0);
 
-                    // Simulate progress updates every 200ms until we reach 90%
                     const progressInterval = setInterval(() => {
                         setUploadProgress(prev => Math.min(prev + 5, 90));
                     }, 200);
 
-                    // Dynamically import cloudinary utils
                     const { uploadToCloudinary, getResourceType } = await import('../../../../utils/cloudinaryUtils');
 
-                    // Upload file to Cloudinary
                     const resourceType = getResourceType(selectedFile);
                     const uploadResult = await uploadToCloudinary(selectedFile, {
                         folder: 'assessments/media',
                         resourceType
                     });
 
-                    // Clear interval and set upload to 100%
                     clearInterval(progressInterval);
                     setUploadProgress(100);
                     setCloudinaryUrl(uploadResult.url);
-                    setCloudinaryData(uploadResult); // Save full result object
-
-                    console.log("File uploaded to Cloudinary:", uploadResult.url);
+                    setCloudinaryData(uploadResult);
                 } catch (error) {
-                    console.error("Error uploading to Cloudinary:", error);
                     setError(`Upload failed: ${error.message}. Will use direct upload when generating quiz.`);
                 } finally {
                     setIsUploading(false);
@@ -262,23 +297,21 @@ const GenerateQuiz = () => {
     };
 
     const handleSubmit = async () => {
-        if (!selectedInput) {
+        if (!selectedInput && !fromLearn) {
             setError("Please select an input type");
             return;
         }
 
-        if (selectedInput.acceptsFile && !file) {
+        if (selectedInput && selectedInput.acceptsFile && !file && !fromLearn) {
             setError("Please upload a file");
             return;
         }
 
-        if (!selectedInput.acceptsFile && !inputValue) {
+        if (selectedInput && !selectedInput.acceptsFile && !inputValue && !fromLearn) {
             setError("Please enter a valid input");
             return;
         }
 
-
-        // For download option, skip difficulty and question count validation
         if (assessmentAction === "take") {
             if (!difficulty) {
                 setError("Please select a difficulty level");
@@ -299,146 +332,93 @@ const GenerateQuiz = () => {
         setLoading(true);
         setError(null);
 
-        console.log(cloudinaryUrl)
-        console.log(cloudinaryData)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // if (assessmentAction === "learn") {
-        //     setIsLearning(true);
-        //     // by deault i am taking to learn page  if nothing match
-        //     // In your component where you handle the upload/navigation:
-        //     if (selectedInput.id === 'mp3-local' || selectedInput.id === 'mp4-local' || selectedInput.id === 'document') {
-        //         try {
-        //             console.log('Preparing file upload to Cloudinary...');
-        //             const { uploadToCloudinary, getResourceType } = await import('../../../../utils/cloudinaryUtils');
-
-        //             const resourceType = getResourceType(file);
-        //             console.log(`Uploading ${file.name} (${file.size} bytes) to Cloudinary as ${resourceType}...`);
-
-        //             const cloudinaryResult = await uploadToCloudinary(file, {
-        //                 folder: 'assessments/media',
-        //                 resourceType
-        //             });
-
-        //             console.log('File uploaded to Cloudinary:', cloudinaryResult);
-
-        //             if (cloudinaryResult.url) {
-        //                 const LearnResponse = await fetchLearnData(
-        //                     cloudinaryResult.original_filename,
-        //                     cloudinaryResult.url,
-        //                     (selectedInput.id === 'mp3-local' || selectedInput.id === 'mp4-local') ? 'video' : selectedInput.id
-        //                 );
-        //                 console.log(LearnResponse);
-
-        //                 // Modified navigation path to match the route
-        //                 navigate(`/attemptquiz/learn/${LearnResponse.data._id}/${selectedInput.id}`, {
-        //                     state: { contentUrl: cloudinaryResult.url }
-        //                 });
-        //             }
-        //         } catch (error) {
-        //             console.error("Error generating quiz:", error);
-        //             throw error;
-        //         }
-        //     } else {
-        //         const title = inputValue.split('/');
-        //         const LearnResponse = await fetchLearnData(
-        //             title[title.length - 1],
-        //             inputValue,
-        //             selectedInput.id === 'mp3-url' ? 'audio' : selectedInput.id === 'mp4-url' ? 'video' : selectedInput.id
-        //         );
-        //         console.log(LearnResponse);
-
-        //         // Modified navigation path to match the route
-        //         navigate(`/attemptquiz/learn/${LearnResponse.data._id}/${selectedInput.id}`, {
-        //             state: { contentUrl: inputValue }
-        //         });
-        //     }
-
-        //     return;
-        // }
-
-
-        // Set isDownloading based on the action
         setIsDownloading(assessmentAction === "download");
 
         try {
             let data;
-            const quizType = assessmentAction === "download" ? "MIX" : questionType.id;
-            const quizCount = assessmentAction === "download" ? "15" : questionCount.id;
-            const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty.id;
+            const quizType = assessmentAction === "download" ? "MIX" : questionType?.id || "MCQ";
+            const quizCount = assessmentAction === "download" ? "15" : questionCount?.id || "5";
+            const quizDifficulty = assessmentAction === "download" ? "medium" : difficulty?.id || "medium";
+            const languageName = language?.name || "English";
 
-            if (selectedInput.id === "youtube") {
-                data = await generateQuizFromYoutube(inputValue, quizCount, quizDifficulty, quizType, language.name);
-            }
-            else if (selectedInput.id === "mp4-local" || selectedInput.id === "mp3-local") {
-                if (cloudinaryUrl && cloudinaryData) {
-                    data = await generateQuizFromMediaUrl(
-                        cloudinaryUrl,
+            if (fromLearn && learnId) {
+                if (!selectedInput || selectedInput.id === "youtube") {
+                    data = await generateQuizFromYoutube(
+                        inputValue || "",
                         quizCount,
                         quizDifficulty,
-                        language.name,
                         quizType,
-                        {
-                            deleteAfterProcessing: true,
-                            cloudinaryPublicId: cloudinaryData.public_id,
-                            resourceType: cloudinaryData.resource_type || 'video'
-                        }
+                        languageName,
+                        learnId
                     );
-                } else {
-                    data = await generateQuizFromMedia(
-                        file,
+                } else if (selectedInput.id === "mp4-local" || selectedInput.id === "mp3-local" ||
+                    selectedInput.id === "mp4-url" || selectedInput.id === "mp3-url") {
+                    data = await generateQuizFromMediaUrl(
+                        cloudinaryUrl || inputValue || "",
                         quizCount,
                         quizDifficulty,
-                        language.name,
                         quizType,
-                        true
+                        languageName,
+                        {
+                            deleteAfterProcessing: false,
+                            cloudinaryPublicId: cloudinaryData?.public_id
+                        },
+                        learnId
+                    );
+                } else if (selectedInput.id === "document") {
+                    // For document type from learn, we might not have a file
+                    // Pass learnId to let the service handle it
+                    data = await generateQuizFromDocument(
+                        file, // This might be null, service will handle it
+                        quizCount,
+                        quizDifficulty,
+                        quizType,
+                        languageName,
+                        learnId
                     );
                 }
-            }
-            else if (selectedInput.id === "mp4-url" || selectedInput.id === "mp3-url") {
-                data = await generateQuizFromMediaUrl(inputValue, quizCount, quizDifficulty, quizType, language.name);
-            }
-            else if (selectedInput.id === "document") {
-                data = await generateQuizFromDocument(file, quizCount, quizDifficulty, quizType, language.name);
-            }
-            else {
-                throw new Error("Unsupported input type");
+            } else {
+                if (selectedInput.id === "youtube") {
+                    data = await generateQuizFromYoutube(inputValue, quizCount, quizDifficulty, quizType, languageName);
+                }
+                else if (selectedInput.id === "mp4-local" || selectedInput.id === "mp3-local") {
+                    if (cloudinaryUrl && cloudinaryData) {
+                        data = await generateQuizFromMediaUrl(
+                            cloudinaryUrl,
+                            quizCount,
+                            quizDifficulty,
+                            quizType,
+                            languageName,
+                            {
+                                deleteAfterProcessing: true,
+                                cloudinaryPublicId: cloudinaryData.public_id,
+                                resourceType: cloudinaryData.resource_type || 'video'
+                            }
+                        );
+                    } else {
+                        data = await generateQuizFromMedia(
+                            file,
+                            quizCount,
+                            quizDifficulty,
+                            languageName,
+                            quizType,
+                            true
+                        );
+                    }
+                }
+                else if (selectedInput.id === "mp4-url" || selectedInput.id === "mp3-url") {
+                    data = await generateQuizFromMediaUrl(inputValue, quizCount, quizDifficulty, quizType, languageName);
+                }
+                else if (selectedInput.id === "document") {
+                    data = await generateQuizFromDocument(file, quizCount, quizDifficulty, quizType, languageName);
+                }
+                else {
+                    throw new Error("Unsupported input type");
+                }
             }
 
-            // If action is download, generate and download PDF
             if (assessmentAction === "download") {
                 try {
-                    // Parse the assessment data
                     let questions;
                     if (data.questions) {
                         questions = data.questions;
@@ -450,17 +430,12 @@ const GenerateQuiz = () => {
                         questions = JSON.parse(data);
                     }
 
-                    // Generate a title based on content
-                    const sourceTitle = selectedInput.acceptsFile
-                        ? file.name.split('.')[0]
-                        : inputValue.substring(0, 30);
+                    // const sourceTitle = (selectedInput?.acceptsFile && file)
+                    //     ? file.name.split('.')[0]
+                    //     : (inputValue ? inputValue.substring(0, 30) : "Assessment");
 
-                    // const pdfTitle = `Assessment - ${sourceTitle}`;
+                    generateAssessmentPDF(questions[0], questions[1]?.title || "", languageName);
 
-                    // Generate and download the PDF
-                    generateAssessmentPDF(questions[0], questions[1].title, language.name);
-
-                    // Show toast notification for successful download
                     toast.success('Assessment successfully downloaded!', {
                         icon: '📄',
                         duration: 6000,
@@ -477,11 +452,7 @@ const GenerateQuiz = () => {
                             secondary: '#fff',
                         },
                     });
-
-                    // Navigate to attempt quiz
-                    // navigate(`/attemptquiz/${data.assessmentId}`);
                 } catch (pdfError) {
-                    console.error('Error generating PDF:', pdfError);
                     setError(`PDF generation failed: ${pdfError.message}. Redirecting to quiz page.`);
 
                     toast.error('Failed to download PDF', {
@@ -493,14 +464,8 @@ const GenerateQuiz = () => {
                             border: '1px solid rgba(239, 68, 68, 0.5)',
                         },
                     });
-
-                    // Navigate to attempt quiz if PDF generation fails
-                    // setTimeout(() => {
-                    //     navigate(`/attemptquiz/${data.assessmentId}`);
-                    // }, 3000);
                 }
             } else if (assessmentAction === "take") {
-                // For "take" action, simply navigate to the quiz
                 navigate(`/attemptquiz/${data.assessmentId}`);
             }
         } catch (err) {
@@ -519,30 +484,44 @@ const GenerateQuiz = () => {
         }
     };
 
+    // Update ActionSelector component rendering to handle null selectedInput
+    const renderActionSelector = () => {
+        if (!selectedInput) return null;
+        
+        return (
+            <ActionSelector
+                inputType={selectedInput?.id || "default"}
+                url={inputValue}
+                onActionSelect={handleActionSelect}
+                file={file}
+                cloudinaryUrl={cloudinaryUrl}
+                cloudinaryData={cloudinaryData}
+            />
+        );
+    };
+
     return (
         <section className="py-16 bg-slate-900 -mt-2 min-h-screen">
-            {/* Loading overlay */}
             <LoadingOverlay loading={loading} isDownloading={isDownloading} isLearning={isLearning} />
 
             <div className="container mx-auto px-6 -mt-12">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Upload Your Content</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                        {fromLearn ? "Configure Your Assessment" : "Upload Your Content"}
+                    </h2>
                     <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 to-indigo-600 mx-auto mb-6"></div>
                 </div>
 
                 <div className="max-w-3xl mx-auto">
                     <div className="bg-slate-950 rounded-xl p-8 border border-cyan-900/30 shadow-lg">
-                        {/* Step 1: Input Type Selection */}
-                        {!showOptionsStep && (
+                        {!showOptionsStep && !fromLearn && (
                             <>
-                                {/* Input Type Selector */}
                                 <InputTypeSelector
                                     inputTypes={inputTypes}
                                     selectedInput={selectedInput}
                                     onSelect={handleInputTypeSelect}
                                 />
 
-                                {/* Input Area */}
                                 {selectedInput && (
                                     <>
                                         <div className="mb-6">
@@ -573,7 +552,6 @@ const GenerateQuiz = () => {
                                             <ErrorMessage error={error} />
                                         </div>
 
-                                        {/* Continue Button */}
                                         <button
                                             className={`w-full py-4 ${isUploading
                                                 ? "bg-slate-700 cursor-not-allowed"
@@ -589,27 +567,54 @@ const GenerateQuiz = () => {
                             </>
                         )}
 
-                        {/* Step 2: Assessment Options */}
                         {showOptionsStep && (
                             <>
-                                {/* Action Selection Options */}
                                 {!assessmentAction ? (
-                                    <ActionSelector
-                                        inputType={selectedInput.id}
-                                        url={inputValue}
-                                        onActionSelect={handleActionSelect}
-                                        file={file}
-                                        cloudinaryUrl={cloudinaryUrl}
-                                        cloudinaryData={cloudinaryData}
-                                    />
+                                    fromLearn ? (
+                                        <div className="mb-8">
+                                            <h3 className="text-xl font-semibold text-white mb-4">Choose Assessment Type</h3>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <button
+                                                    onClick={() => handleActionSelect("take")}
+                                                    className="flex flex-col items-center justify-center p-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-xl transition-all"
+                                                >
+                                                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center mb-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </div>
+                                                    <h4 className="text-lg font-medium text-white mb-2">Take Assessment</h4>
+                                                    <p className="text-sm text-slate-400 text-center">
+                                                        Take an interactive quiz based on the content
+                                                    </p>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleActionSelect("download")}
+                                                    className="flex flex-col items-center justify-center p-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-xl transition-all"
+                                                >
+                                                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center mb-3">
+                                                        <svg xmlns="http://www.w3.org/20000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                        </svg>
+                                                    </div>
+                                                    <h4 className="text-lg font-medium text-white mb-2">Download PDF</h4>
+                                                    <p className="text-sm text-slate-400 text-center">
+                                                        Generate and download a PDF assessment
+                                                    </p>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        renderActionSelector()
+                                    )
                                 ) : (
                                     <>
-                                        {/* Show configuration options only for "take" option */}
                                         {assessmentAction === "take" && (
                                             <ConfigurationOptions
-                                                difficulty={difficulty}
-                                                questionCount={questionCount}
-                                                questionType={questionType}
+                                                difficulty={difficulty || difficultyLevels[0]}
+                                                questionCount={questionCount || questionCounts[0]}
+                                                questionType={questionType || questionTypes[0]}
                                                 difficultyLevels={difficultyLevels}
                                                 questionCounts={questionCounts}
                                                 questionTypes={questionTypes}
@@ -617,15 +622,18 @@ const GenerateQuiz = () => {
                                                 onQuestionCountSelect={handleQuestionCountSelect}
                                                 onQuestionTypeSelect={handleQuestionTypeSelect}
                                                 onLanguageSelect={handleLanguageSelect}
-                                                language={language}
+                                                language={language || languageOptions[0]}
                                                 languageOptions={languageOptions}
                                             />
                                         )}
 
-                                        {/* For download option, show info about what they'll get */}
-                                        {assessmentAction === "download" && <DownloadInfo language={language} onLanguageSelect={handleLanguageSelect} />}
+                                        {assessmentAction === "download" && 
+                                            <DownloadInfo 
+                                                language={language || languageOptions[0]} 
+                                                onLanguageSelect={handleLanguageSelect} 
+                                            />
+                                        }
 
-                                        {/* Submit Button */}
                                         <div className="flex gap-4">
                                             <button
                                                 className="py-4 px-6 bg-slate-800 text-white font-bold rounded-lg transition-all"

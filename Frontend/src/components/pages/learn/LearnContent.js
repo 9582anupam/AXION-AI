@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom"; // Add useNavigate
 import PdfViewer from "../../contentViewer/PdfViewer";
 import { getNotes, getSummary, getFlashes, ask, getMetaData } from "../../../services/learn/learnService";
 import ReactMarkdown from "react-markdown";
@@ -8,6 +8,7 @@ import "./pdfViewer.css";
 
 export const LearnContent = () => {
     const { learnId } = useParams();
+    const navigate = useNavigate(); // Add navigation hook
 
     const [summary, setSummary] = useState(null);
     const [flashes, setFlashes] = useState([]);
@@ -24,12 +25,8 @@ export const LearnContent = () => {
     console.log("contnet-url", contentUrl);
     console.log("content-Type", contentType);
 
-
     const extractYouTubeID = url =>
         (url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|embed\/))([^&?/]+)/) || [])[1] || null;
-
-
-
 
     useEffect(() => {
         const fetchLearnData = async () => {
@@ -104,20 +101,55 @@ export const LearnContent = () => {
         }
     };
 
-
+    // Add function to handle assessment generation
+    const handleGenerateAssessment = () => {
+        navigate("/generatequiz", { 
+            state: { 
+                fromLearn: true,
+                contentType,
+                contentUrl,
+                learnId,
+                skipInputSelection: true // Flag to skip the input selection step
+            } 
+        });
+    };
 
     return (
         <div className=" py-6">
             <div className="container mx-auto px-4">
                 {/* Header */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-white">
-                        Interactive Learning
-                        <span className="ml-2 bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
-                            Experience
-                        </span>
-                    </h1>
-                    <p className="text-slate-400">Explore your content with AI-powered insights and interactive tools</p>
+                <div className="mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold text-white">
+                            Interactive Learning
+                            <span className="ml-2 bg-gradient-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
+                                Experience
+                            </span>
+                        </h1>
+                        <p className="text-slate-400">Explore your content with AI-powered insights and interactive tools</p>
+                    </div>
+                    
+                    {/* Add the Generate Assessment button */}
+                    <button
+                        onClick={handleGenerateAssessment}
+                        className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg transition-all flex items-center"
+                    >
+                        <svg 
+                            className="w-5 h-5 mr-2" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24" 
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" 
+                            />
+                        </svg>
+                        Generate Assessment
+                    </button>
                 </div>
 
                 {/* Main content area with two columns */}
@@ -162,10 +194,6 @@ export const LearnContent = () => {
                                 <audio src={contentUrl} controls width="100%" height="auto" />
                             )
                         }
-
-
-
-
 
                     </div>
 
