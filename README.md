@@ -3,6 +3,12 @@
 ## Overview
 Axion-AI is an advanced learning platform that leverages artificial intelligence to transform how users engage with educational content. The platform enables users to upload various types of content (videos, documents, audio) and transforms them into interactive learning experiences with AI-generated summaries, notes, flashcards, and assessments.
 
+## Demo
+
+Experience Axion-AI in action through the demo video below:
+
+[▶ Watch Axion-AI Demo](https://drive.google.com/file/d/1Smp4mbzusKyAl9pAa-QMVqVcBtLCMvde/view?usp=sharing)
+
 ## Features
 
 ### Content Learning
